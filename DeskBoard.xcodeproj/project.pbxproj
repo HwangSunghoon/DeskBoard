@@ -1,0 +1,351 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		A20000000000000000000002 /* DeskBoardApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000002 /* DeskBoardApp.swift */; };
+		A20000000000000000000003 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000003 /* AppDelegate.swift */; };
+		A20000000000000000000004 /* DesktopWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000004 /* DesktopWindowController.swift */; };
+		A20000000000000000000005 /* SidebarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000005 /* SidebarView.swift */; };
+		A20000000000000000000006 /* DateWeatherView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000006 /* DateWeatherView.swift */; };
+		A20000000000000000000007 /* CalendarSectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000007 /* CalendarSectionView.swift */; };
+		A20000000000000000000008 /* SystemSectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000008 /* SystemSectionView.swift */; };
+		A20000000000000000000009 /* MarketSectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000009 /* MarketSectionView.swift */; };
+		A2000000000000000000000A /* TodoSectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000000000000000000000A /* TodoSectionView.swift */; };
+		A2000000000000000000000B /* ImportantSectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000000000000000000000B /* ImportantSectionView.swift */; };
+		A2000000000000000000000C /* MemoSectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000000000000000000000C /* MemoSectionView.swift */; };
+		A2000000000000000000000E /* Persistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000000000000000000000E /* Persistence.swift */; };
+		A2000000000000000000000F /* SystemMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000000000000000000000F /* SystemMonitor.swift */; };
+		A20000000000000000000010 /* CalendarService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000010 /* CalendarService.swift */; };
+		A20000000000000000000011 /* ExternalDataServices.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000011 /* ExternalDataServices.swift */; };
+		A20000000000000000000012 /* DashboardModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000012 /* DashboardModel.swift */; };
+		A20000000000000000000013 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000013 /* SettingsView.swift */; };
+		A20000000000000000000014 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000014 /* Assets.xcassets */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		A10000000000000000000001 /* DeskBoard.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; path = DeskBoard.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A10000000000000000000002 /* DeskBoardApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeskBoardApp.swift; sourceTree = "<group>"; };
+		A10000000000000000000003 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		A10000000000000000000004 /* DesktopWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesktopWindowController.swift; sourceTree = "<group>"; };
+		A10000000000000000000005 /* SidebarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidebarView.swift; sourceTree = "<group>"; };
+		A10000000000000000000006 /* DateWeatherView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateWeatherView.swift; sourceTree = "<group>"; };
+		A10000000000000000000007 /* CalendarSectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarSectionView.swift; sourceTree = "<group>"; };
+		A10000000000000000000008 /* SystemSectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemSectionView.swift; sourceTree = "<group>"; };
+		A10000000000000000000009 /* MarketSectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarketSectionView.swift; sourceTree = "<group>"; };
+		A1000000000000000000000A /* TodoSectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodoSectionView.swift; sourceTree = "<group>"; };
+		A1000000000000000000000B /* ImportantSectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportantSectionView.swift; sourceTree = "<group>"; };
+		A1000000000000000000000C /* MemoSectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoSectionView.swift; sourceTree = "<group>"; };
+		A1000000000000000000000D /* DeskBoard.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = DeskBoard.entitlements; sourceTree = "<group>"; };
+		A1000000000000000000000E /* Persistence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Persistence.swift; sourceTree = "<group>"; };
+		A1000000000000000000000F /* SystemMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemMonitor.swift; sourceTree = "<group>"; };
+		A10000000000000000000010 /* CalendarService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarService.swift; sourceTree = "<group>"; };
+		A10000000000000000000011 /* ExternalDataServices.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalDataServices.swift; sourceTree = "<group>"; };
+		A10000000000000000000012 /* DashboardModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardModel.swift; sourceTree = "<group>"; };
+		A10000000000000000000013 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		A10000000000000000000014 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		A30000000000000000000007 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = text.markdown; path = README.md; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		A40000000000000000000002 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		A30000000000000000000001 = {
+			isa = PBXGroup;
+			children = (
+				A30000000000000000000002 /* DeskBoard */,
+				A30000000000000000000007 /* README.md */,
+				A30000000000000000000006 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		A30000000000000000000002 /* DeskBoard */ = {
+			isa = PBXGroup;
+			children = (
+				A30000000000000000000003 /* App */,
+				A30000000000000000000004 /* Views */,
+				A30000000000000000000005 /* Window */,
+				A30000000000000000000009 /* Models */,
+				A3000000000000000000000A /* Services */,
+				A3000000000000000000000B /* Settings */,
+				A30000000000000000000008 /* Resources */,
+			);
+			path = DeskBoard;
+			sourceTree = "<group>";
+		};
+		A30000000000000000000003 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				A10000000000000000000002 /* DeskBoardApp.swift */,
+				A10000000000000000000003 /* AppDelegate.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		A30000000000000000000004 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				A10000000000000000000005 /* SidebarView.swift */,
+				A10000000000000000000006 /* DateWeatherView.swift */,
+				A10000000000000000000007 /* CalendarSectionView.swift */,
+				A10000000000000000000008 /* SystemSectionView.swift */,
+				A10000000000000000000009 /* MarketSectionView.swift */,
+				A1000000000000000000000A /* TodoSectionView.swift */,
+				A1000000000000000000000B /* ImportantSectionView.swift */,
+				A1000000000000000000000C /* MemoSectionView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		A30000000000000000000005 /* Window */ = {
+			isa = PBXGroup;
+			children = (
+				A10000000000000000000004 /* DesktopWindowController.swift */,
+			);
+			path = Window;
+			sourceTree = "<group>";
+		};
+		A30000000000000000000006 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				A10000000000000000000001 /* DeskBoard.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		A30000000000000000000008 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				A1000000000000000000000D /* DeskBoard.entitlements */,
+				A10000000000000000000014 /* Assets.xcassets */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		A30000000000000000000009 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				A1000000000000000000000E /* Persistence.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		A3000000000000000000000A /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				A1000000000000000000000F /* SystemMonitor.swift */,
+				A10000000000000000000010 /* CalendarService.swift */,
+				A10000000000000000000011 /* ExternalDataServices.swift */,
+				A10000000000000000000012 /* DashboardModel.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		A3000000000000000000000B /* Settings */ = {
+			isa = PBXGroup;
+			children = (
+				A10000000000000000000013 /* SettingsView.swift */,
+			);
+			path = Settings;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		A50000000000000000000001 /* DeskBoard */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A70000000000000000000002 /* Build configuration list for PBXNativeTarget "DeskBoard" */;
+			buildPhases = (
+				A40000000000000000000001 /* Sources */,
+				A40000000000000000000002 /* Frameworks */,
+				A40000000000000000000003 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = DeskBoard;
+			productName = DeskBoard;
+			productReference = A10000000000000000000001 /* DeskBoard.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		A60000000000000000000001 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 2600;
+				LastUpgradeCheck = 2600;
+				TargetAttributes = {
+					A50000000000000000000001 = {
+						CreatedOnToolsVersion = 26.0;
+					};
+				};
+			};
+			buildConfigurationList = A70000000000000000000001 /* Build configuration list for PBXProject "DeskBoard" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = A30000000000000000000001;
+			productRefGroup = A30000000000000000000006 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				A50000000000000000000001 /* DeskBoard */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		A40000000000000000000003 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A20000000000000000000014 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		A40000000000000000000001 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A20000000000000000000002 /* DeskBoardApp.swift in Sources */,
+				A20000000000000000000003 /* AppDelegate.swift in Sources */,
+				A20000000000000000000004 /* DesktopWindowController.swift in Sources */,
+				A20000000000000000000005 /* SidebarView.swift in Sources */,
+				A20000000000000000000006 /* DateWeatherView.swift in Sources */,
+				A20000000000000000000007 /* CalendarSectionView.swift in Sources */,
+				A20000000000000000000008 /* SystemSectionView.swift in Sources */,
+				A20000000000000000000009 /* MarketSectionView.swift in Sources */,
+				A2000000000000000000000A /* TodoSectionView.swift in Sources */,
+				A2000000000000000000000B /* ImportantSectionView.swift in Sources */,
+				A2000000000000000000000C /* MemoSectionView.swift in Sources */,
+				A2000000000000000000000E /* Persistence.swift in Sources */,
+				A2000000000000000000000F /* SystemMonitor.swift in Sources */,
+				A20000000000000000000010 /* CalendarService.swift in Sources */,
+				A20000000000000000000011 /* ExternalDataServices.swift in Sources */,
+				A20000000000000000000012 /* DashboardModel.swift in Sources */,
+				A20000000000000000000013 /* SettingsView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		A80000000000000000000001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		A80000000000000000000002 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		A80000000000000000000003 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = DeskBoard/Resources/DeskBoard.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = UU9V3Q3PF7;
+				ENABLE_APP_SANDBOX = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
+				INFOPLIST_KEY_NSCalendarsFullAccessUsageDescription = "DeskBoard shows today's events in your private desktop sidebar.";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.local.DeskBoard;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		A80000000000000000000004 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = DeskBoard/Resources/DeskBoard.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = UU9V3Q3PF7;
+				ENABLE_APP_SANDBOX = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
+				INFOPLIST_KEY_NSCalendarsFullAccessUsageDescription = "DeskBoard shows today's events in your private desktop sidebar.";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.local.DeskBoard;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		A70000000000000000000001 /* Build configuration list for PBXProject "DeskBoard" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A80000000000000000000001 /* Debug */,
+				A80000000000000000000002 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A70000000000000000000002 /* Build configuration list for PBXNativeTarget "DeskBoard" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A80000000000000000000003 /* Debug */,
+				A80000000000000000000004 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = A60000000000000000000001 /* Project object */;
+}
