@@ -41,7 +41,7 @@ struct TodoSectionView: View {
                                 .foregroundStyle(.tertiary)
                             TextField("New task", text: $draft)
                                 .textFieldStyle(.plain)
-                                .font(.system(size: 13))
+                                .font(DashboardTypography.item)
                                 .focused($isDraftFocused)
                                 .onSubmit(add)
                             Button(action: add) {
@@ -105,7 +105,7 @@ private struct TodoRow: View {
                 HStack(spacing: 6) {
                     TextField("Todo", text: $editDraft)
                         .textFieldStyle(.plain)
-                        .font(.system(size: 13))
+                        .font(DashboardTypography.item)
                         .focused($isEditFocused)
                         .onSubmit(commitEdit)
                     Button(action: commitEdit) {
@@ -117,7 +117,7 @@ private struct TodoRow: View {
                 }
             } else {
                 Text(item.title)
-                    .font(.system(size: 13))
+                    .font(DashboardTypography.item)
                     .strikethrough(item.isCompleted, color: .secondary)
                     .foregroundStyle(item.isCompleted ? .tertiary : .primary)
                     .onTapGesture(count: 2, perform: beginEditing)

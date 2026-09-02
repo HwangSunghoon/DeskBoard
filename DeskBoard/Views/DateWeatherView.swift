@@ -36,8 +36,16 @@ struct DateWeatherView: View {
             Spacer(minLength: 8)
 
             VStack(alignment: .trailing, spacing: 4) {
-                Text(temperature)
-                    .font(.system(size: 22, weight: .light))
+                HStack(spacing: 6) {
+                    if weather.snapshot != nil {
+                        Image(systemName: weatherSymbolName)
+                            .font(.system(size: 19, weight: .regular))
+                            .symbolRenderingMode(.hierarchical)
+                            .foregroundStyle(.secondary)
+                    }
+                    Text(temperature)
+                        .font(.system(size: 22, weight: .light))
+                }
                 Text(condition)
                     .font(.system(size: 12))
                     .foregroundStyle(.secondary)
@@ -69,6 +77,20 @@ struct DateWeatherView: View {
         case 71...77, 85, 86: return "Snow"
         case 95...99: return "Thunderstorm"
         default: return "Conditions unavailable"
+        }
+    }
+
+    private var weatherSymbolName: String {
+        guard let code = weather.snapshot?.weatherCode else { return "cloud.slash" }
+        switch code {
+        case 0: return "sun.max.fill"
+        case 1, 2: return "cloud.sun.fill"
+        case 3: return "cloud.fill"
+        case 45, 48: return "cloud.fog.fill"
+        case 51...67, 80...82: return "cloud.rain.fill"
+        case 71...77, 85, 86: return "cloud.snow.fill"
+        case 95...99: return "cloud.bolt.rain.fill"
+        default: return "cloud.fill"
         }
     }
 }

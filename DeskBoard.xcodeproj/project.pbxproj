@@ -25,6 +25,7 @@
 		A20000000000000000000012 /* DashboardModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000012 /* DashboardModel.swift */; };
 		A20000000000000000000013 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000013 /* SettingsView.swift */; };
 		A20000000000000000000014 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000014 /* Assets.xcassets */; };
+		A20000000000000000000015 /* QuickOpenView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000015 /* QuickOpenView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -48,6 +49,7 @@
 		A10000000000000000000012 /* DashboardModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardModel.swift; sourceTree = "<group>"; };
 		A10000000000000000000013 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		A10000000000000000000014 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		A10000000000000000000015 /* QuickOpenView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickOpenView.swift; sourceTree = "<group>"; };
 		A30000000000000000000007 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = text.markdown; path = README.md; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -105,6 +107,7 @@
 				A1000000000000000000000A /* TodoSectionView.swift */,
 				A1000000000000000000000B /* ImportantSectionView.swift */,
 				A1000000000000000000000C /* MemoSectionView.swift */,
+				A10000000000000000000015 /* QuickOpenView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -247,6 +250,7 @@
 				A20000000000000000000011 /* ExternalDataServices.swift in Sources */,
 				A20000000000000000000012 /* DashboardModel.swift in Sources */,
 				A20000000000000000000013 /* SettingsView.swift in Sources */,
+				A20000000000000000000015 /* QuickOpenView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

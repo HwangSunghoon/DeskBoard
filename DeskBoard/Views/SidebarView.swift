@@ -1,3 +1,4 @@
+import AppKit
 import SwiftUI
 import SwiftData
 
@@ -5,14 +6,18 @@ struct SidebarView: View {
     @EnvironmentObject private var dashboard: DashboardModel
     @AppStorage("appearance") private var appearance = "light"
     @AppStorage("backgroundOpacity") private var backgroundOpacity = 0.82
+    @Query(sort: [SortDescriptor(\TodoItem.sortOrder), SortDescriptor(\TodoItem.createdAt)]) private var todoItems: [TodoItem]
     @Query(sort: [SortDescriptor(\ImportantItem.sortOrder)]) private var importantItems: [ImportantItem]
+    @State private var memoPreferredHeight: CGFloat = 180
 
     var body: some View {
         GeometryReader { proxy in
-            let layout = adaptiveLayout(for: proxy.size.height)
+            let layout = adaptiveLayout(for: proxy.size)
             VStack(spacing: 0) {
                 DateWeatherView(model: dashboard, weather: dashboard.weather)
                     .frame(height: layout.date)
+                QuickOpenView()
+                    .frame(height: layout.quickOpen)
                 sectionDivider
                 CalendarSectionView(service: dashboard.calendar)
                     .frame(height: layout.calendar)
@@ -29,9 +34,19 @@ struct SidebarView: View {
                 ImportantSectionView()
                     .frame(height: layout.important)
                 sectionDivider
-                MemoSectionView()
+                MemoSectionView(
+                    availableWidth: max(80, proxy.size.width - 36),
+                    onPreferredHeightChange: { height in
+                        guard abs(memoPreferredHeight - height) >= 1 else { return }
+                        memoPreferredHeight = height
+                    }
+                )
                     .frame(height: layout.memo)
             }
+            .animation(.easeInOut(duration: 0.18), value: dashboard.calendar.events.count)
+            .animation(.easeInOut(duration: 0.18), value: todoItems.count)
+            .animation(.easeInOut(duration: 0.18), value: importantItems.count)
+            .animation(.easeInOut(duration: 0.18), value: memoPreferredHeight)
             .padding(.horizontal, 18)
             .background {
                 ZStack {
@@ -78,49 +93,88 @@ struct SidebarView: View {
         }
     }
 
-    private func adaptiveLayout(for height: CGFloat) -> SidebarSectionHeights {
-        let date: CGFloat = 104
-        let system: CGFloat = 104
-        let market: CGFloat = 68
-        let minimumCalendar: CGFloat = 110
-        let minimumTodo: CGFloat = 220
-        let minimumImportant: CGFloat = 100
-        let minimumMemo: CGFloat = 180
+    private func adaptiveLayout(for size: CGSize) -> SidebarSectionHeights {
+        let height = size.height
+        var base = SidebarSectionHeights(
+            date: 104,
+            quickOpen: 42,
+            calendar: 100,
+            system: 104,
+            market: 112,
+            todo: 100,
+            important: 100,
+            memo: 200
+        )
         let dividerSpace: CGFloat = 6
 
-        let calendarTarget = min(210, max(minimumCalendar, 54 + CGFloat(dashboard.calendar.events.count) * 24))
-        let importantTarget = min(180, max(minimumImportant, 54 + CGFloat(importantItems.count) * 24))
-        let minimumTotal = date + system + market + minimumCalendar + minimumTodo + minimumImportant + minimumMemo + dividerSpace
-        let availableExtra = max(0, height - minimumTotal)
-        let calendarNeed = calendarTarget - minimumCalendar
-        let importantNeed = importantTarget - minimumImportant
-        let adaptiveNeed = calendarNeed + importantNeed
-        let adaptiveBudget = min(availableExtra, adaptiveNeed)
-        let scale = adaptiveNeed > 0 ? adaptiveBudget / adaptiveNeed : 0
-        let calendar = minimumCalendar + calendarNeed * scale
-        let important = minimumImportant + importantNeed * scale
-        let flexibleExtra = max(0, availableExtra - adaptiveBudget)
+        var deficit = max(0, base.total + dividerSpace - height)
+        func shrink(_ value: inout CGFloat, to floor: CGFloat) {
+            let reduction = min(deficit, max(0, value - floor))
+            value -= reduction
+            deficit -= reduction
+        }
+        shrink(&base.memo, to: 100)
+        shrink(&base.todo, to: 80)
+        shrink(&base.calendar, to: 80)
+        shrink(&base.important, to: 70)
+        shrink(&base.market, to: 104)
+        shrink(&base.system, to: 96)
+        shrink(&base.date, to: 96)
+        shrink(&base.quickOpen, to: 36)
 
-        return SidebarSectionHeights(
-            date: date,
-            calendar: calendar,
-            system: system,
-            market: market,
-            todo: minimumTodo + flexibleExtra * 0.42,
-            important: important,
-            memo: minimumMemo + flexibleExtra * 0.58
-        )
+        let calendarTarget = min(210, max(base.calendar, 54 + CGFloat(dashboard.calendar.events.count) * 24))
+        let importantTarget = min(180, max(base.important, 54 + CGFloat(importantItems.count) * 24))
+        let todoTarget = max(base.todo, preferredTodoHeight(for: size.width))
+        let memoTarget = max(base.memo, memoPreferredHeight)
+        var result = base
+        var availableExtra = max(0, height - base.total - dividerSpace)
+
+        func grow(_ value: inout CGFloat, toward target: CGFloat) {
+            let addition = min(availableExtra, max(0, target - value))
+            value += addition
+            availableExtra -= addition
+        }
+        grow(&result.calendar, toward: calendarTarget)
+        grow(&result.important, toward: importantTarget)
+        grow(&result.todo, toward: todoTarget)
+        grow(&result.memo, toward: memoTarget)
+
+        // Todo and Important start at the same visual height. Content can grow
+        // either section, while otherwise unused room belongs to the memo.
+        result.memo += availableExtra
+        return result
+    }
+
+    private func preferredTodoHeight(for width: CGFloat) -> CGFloat {
+        let font = NSFont.systemFont(ofSize: 13)
+        let lineHeight = ceil(font.ascender - font.descender + font.leading)
+        let textWidth = max(100, width - 78)
+        let rowsHeight = todoItems.reduce(CGFloat.zero) { total, item in
+            let measurementText = item.title.isEmpty ? " " : item.title
+            let bounds = (measurementText as NSString).boundingRect(
+                with: NSSize(width: textWidth, height: .greatestFiniteMagnitude),
+                options: [.usesLineFragmentOrigin, .usesFontLeading],
+                attributes: [.font: font]
+            )
+            return total + max(20, max(lineHeight, ceil(bounds.height))) + 7
+        }
+        return 50 + rowsHeight
     }
 }
 
 private struct SidebarSectionHeights {
-    let date: CGFloat
-    let calendar: CGFloat
-    let system: CGFloat
-    let market: CGFloat
-    let todo: CGFloat
-    let important: CGFloat
-    let memo: CGFloat
+    var date: CGFloat
+    var quickOpen: CGFloat
+    var calendar: CGFloat
+    var system: CGFloat
+    var market: CGFloat
+    var todo: CGFloat
+    var important: CGFloat
+    var memo: CGFloat
+
+    var total: CGFloat {
+        date + quickOpen + calendar + system + market + todo + important + memo
+    }
 }
 
 struct SectionTitle: View {
@@ -128,7 +182,7 @@ struct SectionTitle: View {
 
     var body: some View {
         Text(text)
-            .font(.system(size: 13, weight: .semibold))
+            .font(DashboardTypography.sectionTitle)
             .foregroundStyle(.secondary)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
@@ -139,8 +193,13 @@ struct PlaceholderText: View {
 
     var body: some View {
         Text(text)
-            .font(.system(size: 13))
+            .font(DashboardTypography.item)
             .foregroundStyle(.tertiary)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
+}
+
+enum DashboardTypography {
+    static let sectionTitle = Font.system(size: 13, weight: .semibold)
+    static let item = Font.system(size: 13)
 }

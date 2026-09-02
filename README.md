@@ -1,6 +1,6 @@
 # DeskBoard
 
-DeskBoard is a native macOS productivity sidebar that keeps the information you use throughout the day visible on the desktop. It combines time and weather, today's calendar, system status, market quotes, todos, important dates, and a free-form daily plan in one lightweight panel.
+DeskBoard is a native macOS productivity sidebar that keeps the information you use throughout the day visible on the desktop. It combines time and weather, today's calendar, system status, market quotes, todos, important dates, and a free-form memo in one lightweight panel.
 
 ![DeskBoard running on macOS](docs/deskboard-screenshot.png)
 
@@ -10,16 +10,17 @@ DeskBoard is a native macOS productivity sidebar that keeps the information you 
 - Left- or right-side placement on the selected display
 - Desktop and Always on Top window modes
 - Digital and analog clock styles
+- Menu-bar-style Quick Open buttons for Notion, ChatGPT, KakaoTalk, Chrome, and Finder
 - Current weather, daily high/low, and precipitation probability
-- Today's events from selected macOS calendars
+- Today's events and locations from selected macOS calendars
 - CPU, memory, battery, network throughput, and uptime monitoring
-- KOSPI and S&P 500 quotes with daily percentage changes
-- Editable todos, important items with optional dates, and an autosaving daily plan
+- KOSPI, KOSDAQ, S&P 500, NASDAQ Composite, USD/KRW, and EUR/KRW quotes
+- Editable todos, important items with optional dates, and an autosaving memo
 - Adaptive section sizing with independent scrolling for longer lists
 - Light, dark, and system appearances with adjustable background opacity
-- Optional Dock icon and launch-at-login support
+- Optional Dock and menu bar icons with launch-at-login support
 
-Todos, important items, and the daily plan are stored locally with SwiftData. The app has no external package dependencies.
+Todos, important items, and the memo are stored locally with SwiftData. The app has no external package dependencies.
 
 ## Requirements
 
@@ -51,8 +52,8 @@ DeskBoard opens as a sidebar near the edge of the selected display. Use the gear
 
 | Feature | Source | Notes |
 | --- | --- | --- |
-| Weather | [Open-Meteo](https://open-meteo.com/) | Uses the latitude and longitude configured in Settings. No API key is required. |
-| Market | Yahoo Finance chart endpoint | Retrieves KOSPI (`^KS11`) and S&P 500 (`^GSPC`) quotes. No API key is stored. |
+| Weather | [Open-Meteo](https://open-meteo.com/) | Uses locally stored coordinates (Seoul by default). No API key is required. |
+| Market | Yahoo Finance chart endpoint | Retrieves Korean and US indices plus USD/KRW and EUR/KRW exchange rates. No API key is stored. |
 | Calendar | EventKit | macOS asks for calendar access before events are shown. You can display all calendars or select one calendar. |
 | System | macOS system APIs | CPU, RAM, battery, network, and uptime are measured locally. |
 

@@ -3,7 +3,7 @@ import SwiftData
 
 struct ImportantSectionView: View {
     @Environment(\.modelContext) private var context
-    @Query(sort: [SortDescriptor(\ImportantItem.sortOrder)]) private var items: [ImportantItem]
+    @Query private var items: [ImportantItem]
     @State private var isAdding = false
     @State private var title = ""
     @State private var date: Date?
@@ -27,17 +27,18 @@ struct ImportantSectionView: View {
                         .onSubmit(add)
                     ImportantDateButton(date: $date)
                 }
-                .font(.system(size: 13))
+                .font(DashboardTypography.item)
             }
             if items.isEmpty && !isAdding { PlaceholderText(text: "Pin a date or reminder") }
             ScrollView(.vertical) {
                 LazyVStack(spacing: 6) {
-                    ForEach(Array(items.enumerated()), id: \.element.persistentModelID) { index, item in
+                    ForEach(Array(sortedItems.enumerated()), id: \.element.persistentModelID) { index, item in
+                        let orderedItems = sortedItems
                         ImportantRow(
                             item: item,
                             delete: { context.delete(item) },
-                            moveEarlier: index > 0 ? { swap(item, items[index - 1]) } : nil,
-                            moveLater: index < items.count - 1 ? { swap(item, items[index + 1]) } : nil
+                            moveEarlier: index > 0 && canReorder(item, with: orderedItems[index - 1]) ? { swap(item, orderedItems[index - 1]) } : nil,
+                            moveLater: index < orderedItems.count - 1 && canReorder(item, with: orderedItems[index + 1]) ? { swap(item, orderedItems[index + 1]) } : nil
                         )
                     }
                 }
@@ -63,6 +64,44 @@ struct ImportantSectionView: View {
         first.sortOrder = second.sortOrder
         second.sortOrder = value
     }
+
+    private var sortedItems: [ImportantItem] {
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: .now)
+        return items.sorted { first, second in
+            let firstGroup = dateGroup(first.date, relativeTo: today, calendar: calendar)
+            let secondGroup = dateGroup(second.date, relativeTo: today, calendar: calendar)
+            if firstGroup != secondGroup { return firstGroup < secondGroup }
+
+            switch (first.date, second.date) {
+            case let (firstDate?, secondDate?):
+                let firstDay = calendar.startOfDay(for: firstDate)
+                let secondDay = calendar.startOfDay(for: secondDate)
+                if firstDay != secondDay {
+                    return firstGroup == 1 ? firstDay > secondDay : firstDay < secondDay
+                }
+            default:
+                break
+            }
+            return first.sortOrder < second.sortOrder
+        }
+    }
+
+    private func dateGroup(_ date: Date?, relativeTo today: Date, calendar: Calendar) -> Int {
+        guard let date else { return 2 }
+        return calendar.startOfDay(for: date) >= today ? 0 : 1
+    }
+
+    private func canReorder(_ first: ImportantItem, with second: ImportantItem) -> Bool {
+        switch (first.date, second.date) {
+        case (nil, nil):
+            return true
+        case let (firstDate?, secondDate?):
+            return Calendar.current.isDate(firstDate, inSameDayAs: secondDate)
+        default:
+            return false
+        }
+    }
 }
 
 private struct ImportantRow: View {
@@ -80,7 +119,7 @@ private struct ImportantRow: View {
                     .foregroundStyle(.secondary)
                     .frame(width: 76, alignment: .leading)
             }
-            Text(item.title).font(.system(size: 13)).lineLimit(1)
+            Text(item.title).font(DashboardTypography.item).lineLimit(1)
             Spacer(minLength: 3)
             if hovering {
                 Button(action: delete) { Image(systemName: "xmark").font(.system(size: 9)) }

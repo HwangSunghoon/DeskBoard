@@ -1,14 +1,23 @@
+import AppKit
 import SwiftUI
 import SwiftData
 
 struct MemoSectionView: View {
     @Environment(\.modelContext) private var context
     @Query private var documents: [MemoDocument]
+    let availableWidth: CGFloat
+    let onPreferredHeightChange: (CGFloat) -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 9) {
-            SectionTitle(text: "Today’s Plan")
-            if let document = documents.first { MemoEditor(document: document) }
+            SectionTitle(text: "Memo")
+            if let document = documents.first {
+                MemoEditor(
+                    document: document,
+                    availableWidth: availableWidth,
+                    onPreferredHeightChange: onPreferredHeightChange
+                )
+            }
         }
         .padding(.vertical, 13)
         .task {
@@ -19,11 +28,17 @@ struct MemoSectionView: View {
 
 private struct MemoEditor: View {
     @Bindable var document: MemoDocument
+    let availableWidth: CGFloat
+    let onPreferredHeightChange: (CGFloat) -> Void
+    @FocusState private var isFocused: Bool
+    @State private var layoutCommitTask: Task<Void, Never>?
 
     var body: some View {
         TextEditor(text: $document.text)
             .font(.system(size: 13))
+            .focused($isFocused)
             .scrollContentBackground(.hidden)
+            .scrollIndicators(.hidden)
             .background(.clear)
             .overlay(alignment: .topLeading) {
                 if document.text.isEmpty {
@@ -35,6 +50,46 @@ private struct MemoEditor: View {
                         .allowsHitTesting(false)
                 }
             }
-            .onChange(of: document.text) { document.updatedAt = .now }
+            .onChange(of: document.text) {
+                document.updatedAt = .now
+                scheduleLayoutCommit()
+            }
+            .onChange(of: isFocused) {
+                if !isFocused { commitLayout() }
+            }
+            .onChange(of: availableWidth) { scheduleLayoutCommit() }
+            .onAppear { commitLayout() }
+            .onDisappear { layoutCommitTask?.cancel() }
+    }
+
+    private func scheduleLayoutCommit() {
+        layoutCommitTask?.cancel()
+        let text = document.text
+        let width = availableWidth
+        layoutCommitTask = Task { @MainActor in
+            try? await Task.sleep(for: .milliseconds(800))
+            guard !Task.isCancelled else { return }
+            onPreferredHeightChange(preferredHeight(for: text, width: width))
+        }
+    }
+
+    private func commitLayout() {
+        layoutCommitTask?.cancel()
+        onPreferredHeightChange(preferredHeight(for: document.text, width: availableWidth))
+    }
+
+    private func preferredHeight(for text: String, width: CGFloat) -> CGFloat {
+        let font = NSFont.systemFont(ofSize: 13)
+        let measurementText = text.isEmpty ? " " : text + "\n "
+        let bounds = (measurementText as NSString).boundingRect(
+            with: NSSize(width: max(80, width - 12), height: .greatestFiniteMagnitude),
+            options: [.usesLineFragmentOrigin, .usesFontLeading],
+            attributes: [.font: font]
+        )
+        let sectionChrome: CGFloat = 52
+        let lineHeight = ceil(font.ascender - font.descender + font.leading)
+        let rawHeight = sectionChrome + max(lineHeight, ceil(bounds.height))
+        let rowStep: CGFloat = 24
+        return max(180, ceil(rawHeight / rowStep) * rowStep)
     }
 }

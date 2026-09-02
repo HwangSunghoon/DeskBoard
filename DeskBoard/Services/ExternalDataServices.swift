@@ -94,6 +94,8 @@ struct MarketQuote: Codable, Identifiable {
     let updatedAt: Date
 }
 
+private let marketSymbolOrder = ["^KS11", "^KQ11", "^GSPC", "^IXIC", "KRW=X", "EURKRW=X"]
+
 protocol MarketProviding {
     func fetchQuotes() async throws -> [MarketQuote]
 }
@@ -117,17 +119,29 @@ struct YahooMarketProvider: MarketProviding {
         let chart: Chart
     }
 
-    private let instruments = [Instrument(symbol: "^KS11", name: "KOSPI"), Instrument(symbol: "^GSPC", name: "S&P 500")]
+    private let instruments = [
+        Instrument(symbol: "^KS11", name: "KOSPI"),
+        Instrument(symbol: "^KQ11", name: "KOSDAQ"),
+        Instrument(symbol: "^GSPC", name: "S&P 500"),
+        Instrument(symbol: "^IXIC", name: "NASDAQ"),
+        Instrument(symbol: "KRW=X", name: "USD/KRW"),
+        Instrument(symbol: "EURKRW=X", name: "EUR/KRW")
+    ]
 
     func fetchQuotes() async throws -> [MarketQuote] {
-        try await withThrowingTaskGroup(of: MarketQuote.self) { group in
+        let quotes = await withTaskGroup(of: MarketQuote?.self) { group in
             for instrument in instruments {
-                group.addTask { try await fetch(instrument) }
+                group.addTask { try? await fetch(instrument) }
             }
             var result: [MarketQuote] = []
-            for try await quote in group { result.append(quote) }
-            return result.sorted { $0.name == "KOSPI" && $1.name != "KOSPI" }
+            for await quote in group {
+                if let quote { result.append(quote) }
+            }
+            return result
         }
+        guard !quotes.isEmpty else { throw URLError(.cannotLoadFromNetwork) }
+        let quotesBySymbol = Dictionary(uniqueKeysWithValues: quotes.map { ($0.symbol, $0) })
+        return marketSymbolOrder.compactMap { quotesBySymbol[$0] }
     }
 
     private func fetch(_ instrument: Instrument) async throws -> MarketQuote {
@@ -160,7 +174,9 @@ final class MarketService: ObservableObject {
     init(provider: MarketProviding = YahooMarketProvider()) {
         self.provider = provider
         if let data = UserDefaults.standard.data(forKey: cacheKey) {
-            quotes = (try? JSONDecoder().decode([MarketQuote].self, from: data)) ?? []
+            let cached = (try? JSONDecoder().decode([MarketQuote].self, from: data)) ?? []
+            let cachedBySymbol = Dictionary(uniqueKeysWithValues: cached.map { ($0.symbol, $0) })
+            quotes = marketSymbolOrder.compactMap { cachedBySymbol[$0] }
         }
     }
 
@@ -181,9 +197,11 @@ final class MarketService: ObservableObject {
     func refresh() async {
         do {
             let values = try await provider.fetchQuotes()
-            quotes = values
+            let existingBySymbol = Dictionary(uniqueKeysWithValues: quotes.map { ($0.symbol, $0) })
+            let freshBySymbol = Dictionary(uniqueKeysWithValues: values.map { ($0.symbol, $0) })
+            quotes = marketSymbolOrder.compactMap { freshBySymbol[$0] ?? existingBySymbol[$0] }
             isUnavailable = false
-            if let data = try? JSONEncoder().encode(values) { UserDefaults.standard.set(data, forKey: cacheKey) }
+            if let data = try? JSONEncoder().encode(quotes) { UserDefaults.standard.set(data, forKey: cacheKey) }
         } catch {
             isUnavailable = quotes.isEmpty
         }

@@ -7,6 +7,7 @@ struct CalendarEventItem: Identifiable {
     let title: String
     let startDate: Date
     let isAllDay: Bool
+    let location: String?
 }
 
 @MainActor
@@ -54,8 +55,24 @@ final class CalendarService: ObservableObject {
         let selectedCalendars = selectedID.isEmpty ? nil : store.calendars(for: .event).filter { $0.calendarIdentifier == selectedID }
         let matches = store.events(matching: store.predicateForEvents(withStart: start, end: end, calendars: selectedCalendars))
         events = matches.sorted { $0.startDate < $1.startDate }.map {
-            CalendarEventItem(id: $0.eventIdentifier ?? UUID().uuidString, title: $0.title, startDate: $0.startDate, isAllDay: $0.isAllDay)
+            let location = shortLocation(for: $0)
+            return CalendarEventItem(
+                id: $0.eventIdentifier ?? UUID().uuidString,
+                title: $0.title,
+                startDate: $0.startDate,
+                isAllDay: $0.isAllDay,
+                location: location?.isEmpty == false ? location : nil
+            )
         }
+    }
+
+    private func shortLocation(for event: EKEvent) -> String? {
+        let rawLocation = event.structuredLocation?.title ?? event.location
+        guard let rawLocation else { return nil }
+        return rawLocation
+            .components(separatedBy: CharacterSet(charactersIn: ",\n"))
+            .first?
+            .trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
     deinit {

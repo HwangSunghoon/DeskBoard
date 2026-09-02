@@ -31,7 +31,16 @@ struct CalendarSectionView: View {
                                 Text(event.title)
                                     .font(.system(size: 13))
                                     .lineLimit(1)
+                                    .layoutPriority(1)
                                 Spacer(minLength: 0)
+                                if !event.isAllDay, let location = event.location {
+                                    Text(location)
+                                        .font(.system(size: 10, weight: .medium))
+                                        .foregroundStyle(.secondary)
+                                        .lineLimit(1)
+                                        .truncationMode(.tail)
+                                        .frame(maxWidth: 82, alignment: .trailing)
+                                }
                             }
                         }
                     }

@@ -8,6 +8,7 @@ struct SettingsView: View {
     @AppStorage("sidebarSide") private var sidebarSide = "right"
     @AppStorage("selectedDisplayID") private var selectedDisplayID = ""
     @AppStorage("showDockIcon") private var showDockIcon = true
+    @AppStorage("showMenuBarIcon") private var showMenuBarIcon = true
     @AppStorage("appearance") private var appearance = "light"
     @AppStorage("backgroundOpacity") private var backgroundOpacity = 0.82
     @AppStorage("clockStyle") private var clockStyle = "digital"
@@ -27,13 +28,14 @@ struct SettingsView: View {
         dataObservedSettings
     }
 
-    private var settingsTabs: some View {
-        TabView {
-            generalTab
-            appearanceTab
-            dataTab
+    private var settingsForm: some View {
+        Form {
+            generalSection
+            appearanceSection
+            dataSection
         }
-        .frame(width: 480, height: 360)
+        .formStyle(.grouped)
+        .frame(width: 480, height: 560)
         .onAppear {
             reloadDisplays()
             reloadCalendars()
@@ -45,7 +47,7 @@ struct SettingsView: View {
     }
 
     private var dataObservedSettings: some View {
-        settingsTabs
+        settingsForm
         .onChange(of: weatherLocationName) { scheduleDataChange() }
         .onChange(of: weatherLatitude) { scheduleDataChange() }
         .onChange(of: weatherLongitude) { scheduleDataChange() }
@@ -54,8 +56,8 @@ struct SettingsView: View {
         .onDisappear { dataChangeTask?.cancel() }
     }
 
-    private var generalTab: some View {
-        Form {
+    private var generalSection: some View {
+        Section("General") {
             Toggle("Launch at Login", isOn: Binding(get: { launchAtLogin }, set: updateLaunchAtLogin))
             Picker("Window", selection: $windowMode) {
                 Text("Desktop").tag("desktop")
@@ -72,16 +74,16 @@ struct SettingsView: View {
             .help("Choose which monitor shows the DeskBoard sidebar.")
             Toggle("Show Dock Icon", isOn: $showDockIcon)
                 .help("Also show DeskBoard in the Dock and Command-Tab app switcher.")
+            Toggle("Show Menu Bar Icon", isOn: $showMenuBarIcon)
+                .help("Show DeskBoard controls in the macOS menu bar.")
             if let launchError {
                 Text(launchError).font(.caption).foregroundStyle(.secondary)
             }
         }
-        .formStyle(.grouped)
-        .tabItem { Label("General", systemImage: "gear") }
     }
 
-    private var appearanceTab: some View {
-        Form {
+    private var appearanceSection: some View {
+        Section("Appearance") {
             Picker("Appearance", selection: $appearance) {
                 Text("Light").tag("light")
                 Text("Dark").tag("dark")
@@ -100,36 +102,23 @@ struct SettingsView: View {
                 }
             }
         }
-        .formStyle(.grouped)
-        .tabItem { Label("Appearance", systemImage: "circle.lefthalf.filled") }
     }
 
-    private var dataTab: some View {
-        Form {
-            Section("Calendar") {
-                Picker("Events", selection: $selectedCalendarID) {
-                    Text("All Calendars").tag("")
-                    ForEach(calendars) { calendar in Text(calendar.name).tag(calendar.id) }
-                }
+    private var dataSection: some View {
+        Section("Data") {
+            Picker("Calendar", selection: $selectedCalendarID) {
+                Text("All Calendars").tag("")
+                ForEach(calendars) { calendar in Text(calendar.name).tag(calendar.id) }
             }
-            Section("Weather · Open-Meteo") {
-                TextField("Location name", text: $weatherLocationName)
-                TextField("Latitude", value: $weatherLatitude, format: .number.precision(.fractionLength(4)))
-                TextField("Longitude", value: $weatherLongitude, format: .number.precision(.fractionLength(4)))
-            }
-            Section("Market · Yahoo Finance") {
-                Picker("Refresh", selection: $marketRefreshInterval) {
-                    Text("1 minute").tag(60.0)
-                    Text("5 minutes").tag(300.0)
-                    Text("15 minutes").tag(900.0)
-                }
-                Text("KOSPI and S&P 500 daily quotes. No API key is stored.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+
+            TextField("Weather location", text: $weatherLocationName)
+
+            Picker("Market refresh", selection: $marketRefreshInterval) {
+                Text("1 minute").tag(60.0)
+                Text("5 minutes").tag(300.0)
+                Text("15 minutes").tag(900.0)
             }
         }
-        .formStyle(.grouped)
-        .tabItem { Label("Data", systemImage: "arrow.triangle.2.circlepath") }
     }
 
     private func updateLaunchAtLogin(_ enabled: Bool) {
