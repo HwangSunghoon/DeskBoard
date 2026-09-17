@@ -8,7 +8,6 @@ final class DashboardModel: ObservableObject {
     let system = SystemMonitor()
     let calendar = CalendarService()
     let weather = WeatherService()
-    let market = MarketService()
     let focusTimer = FocusTimerStore.shared
 
     private var clock: Timer?
@@ -20,7 +19,6 @@ final class DashboardModel: ObservableObject {
             forName: .deskBoardDataSettingsChanged, object: nil, queue: .main
         ) { [weak self] _ in
             Task { @MainActor in
-                self?.market.schedule()
                 if self?.calendar.isRunning == true { await self?.calendar.refresh() }
             }
         })
@@ -33,7 +31,6 @@ final class DashboardModel: ObservableObject {
             guard let self else { return }
             if sections.contains(.system) { self.system.start() } else { self.system.stop() }
             if sections.contains(.today) { self.calendar.start() } else { self.calendar.stop() }
-            if sections.contains(.market) { self.market.start() } else { self.market.stop() }
         }
         let timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
             Task { @MainActor in
@@ -52,7 +49,6 @@ final class DashboardModel: ObservableObject {
         system.stop()
         calendar.stop()
         weather.stop()
-        market.stop()
         sectionObserver = nil
     }
 

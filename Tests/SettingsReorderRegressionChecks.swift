@@ -23,27 +23,6 @@ struct SettingsReorderRegressionChecks {
         preferences.moveSections(fromOffsets: [], toOffset: 0)
         precondition(preferences.sectionOrder == moved)
 
-        let instruments = preferences.marketInstruments
-        preferences.moveInstruments(fromOffsets: IndexSet(integer: 0), toOffset: instruments.count)
-        precondition(preferences.marketInstruments == Array(instruments.dropFirst()) + [instruments[0]])
-        preferences.moveInstruments(fromOffsets: IndexSet(integer: instruments.count - 1), toOffset: 0)
-        precondition(preferences.marketInstruments == instruments)
-        preferences.moveInstruments(fromOffsets: IndexSet([0, 2]), toOffset: instruments.count)
-        let reorderedInstruments = [instruments[1], instruments[3], instruments[4], instruments[5], instruments[0], instruments[2]]
-        precondition(preferences.marketInstruments == reorderedInstruments)
-        precondition(DashboardPreferences(defaults: defaults).marketInstruments == reorderedInstruments)
-        preferences.moveInstruments(fromOffsets: IndexSet(integer: 99), toOffset: 0)
-        preferences.moveInstruments(fromOffsets: IndexSet(integer: 0), toOffset: -1)
-        precondition(preferences.marketInstruments == reorderedInstruments)
-        for instrument in Array(preferences.marketInstruments.prefix(4)) { preferences.setSelected(instrument, false) }
-        precondition(preferences.marketInstruments.count == 2)
-        let pair = preferences.marketInstruments
-        preferences.moveInstruments(fromOffsets: IndexSet(integer: 0), toOffset: 2)
-        precondition(preferences.marketInstruments == Array(pair.reversed()))
-        preferences.setSelected(pair[0], false)
-        precondition(preferences.marketInstruments.count == 2)
-        precondition(DashboardPreferences(defaults: defaults).marketInstruments == preferences.marketInstruments)
-
         let cityIDs = ["Asia/Seoul", "Europe/London", "Africa/Accra", "America/New_York"]
         defaults.set(cityIDs, forKey: "worldClock.cities.v1")
         let world = WorldClockStore(defaults: defaults)
@@ -74,6 +53,6 @@ struct SettingsReorderRegressionChecks {
         quickOpen.moveApplications(fromOffsets: IndexSet(integer: 7), toOffset: 0)
         quickOpen.moveApplications(fromOffsets: IndexSet(integer: 0), toOffset: 7)
         precondition(quickOpen.applications == expected)
-        print("PASS: four native move handlers; market limits; up/down/multi-row/no-op/boundaries; saved order, visibility, IDs and bookmarks preserved")
+        print("PASS: three native move handlers; up/down/multi-row/no-op/boundaries; saved order, visibility, IDs and bookmarks preserved")
     }
 }

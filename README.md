@@ -1,8 +1,6 @@
 # DeskBoard
 
-DeskBoard is a native macOS productivity sidebar that keeps the information you use throughout the day visible on the desktop. It combines time and weather, today's calendar, system status, market quotes, todos, important dates, and a free-form memo in one lightweight panel.
-
-![DeskBoard running on macOS](docs/deskboard-screenshot.png)
+DeskBoard is a native macOS productivity sidebar that keeps the information you use throughout the day visible on the desktop. It combines time and weather, today's calendar, system status, todos, important dates, and a free-form memo in one lightweight panel.
 
 ## Features
 
@@ -15,12 +13,11 @@ DeskBoard is a native macOS productivity sidebar that keeps the information you 
 - Search and select a weather city with region/country information; coordinates are saved with the selection, without requesting device location permission
 - Today's events and locations from selected macOS calendars
 - CPU, memory, battery, and network throughput monitoring
-- Choose and reorder 2–6 of 15 market indicators: Korean, US, European, and Asian indices; USD/KRW, EUR/KRW, EUR/USD; gold and WTI futures; and Bitcoin (USD)
 - Editable todos, important items with optional dates, and an autosaving memo
 - Compact month calendar for Important dates, with one-click date selection
 - Adaptive section sizing with independent scrolling for longer lists
 - Time, weather, and Memo are always visible; other sections are opt-in on first launch. Existing optional-section selections are preserved, and hidden sections keep their saved data
-- Drag rows in Settings to reorder sections, Quick Open applications, World Clock cities, and market indicators; order is saved across launches. Time, weather, and Quick Open stay at the top, while Memo can move but cannot be hidden
+- Drag rows in Settings to reorder sections, Quick Open applications, and World Clock cities; order is saved across launches. Time, weather, and Quick Open stay at the top, while Memo can move but cannot be hidden
 - Built-in English user guide under Help → DeskBoard Help, available offline
 - Quick Open takes no vertical space when no applications are selected
 - Optional compact Focus Timer with pause/resume, configurable focus and break durations, and session restoration
@@ -61,36 +58,35 @@ DeskBoard opens as a sidebar near the edge of the selected display. Use the gear
 | Feature | Source | Notes |
 | --- | --- | --- |
 | Weather | [Open-Meteo](https://open-meteo.com/) | City search returns coordinates for the selected city (Seoul by default). No device location permission is requested. The current public endpoints require no API key. |
-| Market | Yahoo Finance chart endpoint | Retrieves Korean and US indices plus USD/KRW and EUR/KRW exchange rates. No API key is stored. |
 | Calendar | EventKit | macOS asks for calendar access before events are shown. You can display all calendars or select one calendar. |
 | Quick Open | NSWorkspace | Apps are selected with the macOS file picker. Security-scoped bookmarks retain access across launches. |
 | System | macOS system APIs | CPU, RAM, battery, and network are measured locally, only while System is enabled. |
 
-Weather refreshes every 15 minutes and when a new city is selected. Market refresh can be set to 1, 5, or 15 minutes. The last successful weather and market responses are cached locally so the dashboard can continue showing recent data when a request fails. Weather caches are tied to coordinates; switching cities never displays a different city's cached forecast.
+Weather refreshes every 15 minutes and when a new city is selected. The last successful weather responses are cached locally so the dashboard can continue showing recent data when a request fails. Weather caches are tied to coordinates; switching cities never displays a different city's cached forecast.
 
-Failures keep the last successful values and retry with a capped backoff. No automatic error popups are shown. A subtle dot appears only after weather is over two hours old or a market quote has not refreshed for over 30 minutes; hover for timestamps. Market changes use the previous-session baseline from a **one-day** Yahoo chart, not the beginning of a five-day chart. Hiding Market, System, or Today stops their polling; hiding Focus does not pause an active countdown.
+Failures keep the last successful values and retry with a capped backoff. No automatic error popups are shown. A subtle dot appears only after weather is over two hours old; hover for timestamps. Hiding System or Today stops their polling; hiding Focus does not pause an active countdown.
 
 ### Local save recovery
 
 Todo, Important and Memo use explicit saves with retry. Short failures are silent. A separate atomic JSON recovery copy protects edits when the database cannot save. A small save-status control appears only when neither storage path has worked for five minutes (or an explicit quit would lose edits). No rollback clears text from the editor.
 
-If the database cannot open, DeskBoard preserves it and tries an in-memory editor using the latest readable recovery snapshot. If the database opens but an unsaved recovery copy also exists, the database is shown unchanged and restoration is offered explicitly. Restoration archives the original content first; recovery content can be exported as JSON. Recovery snapshots are local plaintext files under the app's Application Support `DeskBoard/Recovery` directory (inside its container for sandboxed builds). They are crash-recovery copies, not protection against whole-disk failure. A damaged snapshot or a process killed before the next save can still require manual recovery.
+If the database cannot open, DeskBoard preserves it and tries an in-memory editor using the latest readable recovery snapshot. If the database opens but an unsaved recovery copy also exists, the database is shown unchanged and restoration is offered explicitly. Restoration archives the original content first; recovery content can be exported as JSON. Recovery snapshots are local plaintext files under the app's Application Support `DeskBoard/Recovery` directory (inside its container for sandboxed builds). Readable retired recovery archives older than 30 days are pruned only after both a database save and backup update succeed, with no unresolved pending recovery. Current backups, pending copies, unreadable files, and user exports do not expire through this cleanup. They are crash-recovery copies, not protection against whole-disk failure. A damaged snapshot or a process killed before the next save can still require manual recovery.
 
 ### Distribution checklist
 
-Release enables Hardened Runtime and dSYM generation; a required-reason privacy manifest declares app-owned UserDefaults access. Quick Open uses app-scoped bookmarks, and user-selected read/write access supports recovery export. These settings do **not** replace signed-sandbox testing, Developer ID notarization for direct distribution, or App Store validation.
+Release enables Hardened Runtime and dSYM generation; a required-reason privacy manifest declares app-owned UserDefaults access and recovery-file timestamp access ([Apple's approved reasons](https://developer.apple.com/documentation/bundleresources/app-privacy-configuration/nsprivacyaccessedapitypes/nsprivacyaccessedapitype)). Quick Open uses app-scoped bookmarks, and user-selected read/write access supports recovery export. These settings do **not** replace signed-sandbox testing, Developer ID notarization for direct distribution, or App Store validation.
 
-Open-Meteo's free service is for non-commercial use; commercial distribution requires an appropriate plan and attribution review ([terms](https://open-meteo.com/en/terms)). Yahoo endpoint availability and market-data redistribution rights must be reviewed before a public release. No commercial API subscription or distribution signing was configured automatically.
+Open-Meteo's free service is for non-commercial use; commercial distribution requires an appropriate plan and attribution review ([terms](https://open-meteo.com/en/terms)). No commercial API subscription or distribution signing was configured automatically. Before release, publish the policy and support documents at stable public URLs, finalize the Bundle ID/version, and test a signed build. An unsigned build is not a distributable release.
 
 ### Regression checks
 
-With Xcode selected, run `bash Tests/run-regression-checks.sh`. The standalone checks cover timers, preferences, ordering, weather search races, daily market baselines, partial/offline results, conservative warning thresholds, failed saves and recovery. Tests use isolated preferences and temporary/in-memory stores, never the user's app data. Signed sandbox permissions, UI interaction, macOS 14/Intel compatibility, and multi-monitor/sleep-wake behavior still require device testing.
+With Xcode selected, run `bash Tests/run-regression-checks.sh`. The standalone checks cover timers, preferences, ordering, weather search races, offline results, conservative warning thresholds, failed saves and recovery. Tests use isolated preferences and temporary/in-memory stores, never the user's app data. Signed sandbox permissions, UI interaction, macOS 14/Intel compatibility, and multi-monitor/sleep-wake behavior still require device testing.
 
-Yahoo Finance's public chart endpoint is not an official supported API and may change or become unavailable. Market information is provided for convenience only and is not financial advice.
+## Privacy and Support
 
-## Privacy
+Read the [Privacy Policy](docs/privacy.md) and [Support guide](docs/support.md). Both documents ship with the app and open offline from small links at the bottom of Settings or in Help. Support links to the public [GitHub Issues](https://github.com/HwangSunghoon/DeskBoard/issues) page; do not post private data there.
 
-DeskBoard does not include analytics, telemetry, advertising, or account sign-in. Personal productivity data remains on the Mac. Network requests are limited to the weather and market providers described above. City search text is sent to Open-Meteo's geocoding service, and the selected coordinates are sent to its forecast service.
+DeskBoard does not include analytics, telemetry, advertising, or account sign-in. Personal productivity data remains on the Mac. Network requests are limited to the weather provider described above. City search text is sent to Open-Meteo's geocoding service, and the selected coordinates are sent to its forecast service.
 
 ## Project Structure
 
@@ -99,7 +95,7 @@ DeskBoard/
 ├── App/          Application lifecycle and menu commands
 ├── Models/       SwiftData models
 ├── Resources/    Entitlements and app icon assets
-├── Services/     Calendar, weather, market, and system data
+├── Services/     Calendar, weather, and system data
 ├── Settings/     Preferences UI
 ├── Views/        Sidebar sections and adaptive layout
 └── Window/       AppKit desktop panel management

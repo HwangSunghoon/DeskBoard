@@ -24,7 +24,7 @@ run_check FocusTimer DeskBoard/Services/FocusTimerStore.swift
 run_check WorldClock DeskBoard/Services/WorldClockStore.swift
 run_check SectionOrder DeskBoard/Services/DashboardPreferences.swift DeskBoard/Views/SidebarLayout.swift
 run_check SettingsReorder DeskBoard/Services/DashboardPreferences.swift DeskBoard/Services/WorldClockStore.swift DeskBoard/Services/QuickOpenStore.swift
-run_check WeatherLocation DeskBoard/Services/DashboardPreferences.swift DeskBoard/Services/WeatherLocationStore.swift DeskBoard/Services/ExternalDataServices.swift
-run_check NetworkResilience DeskBoard/Services/DashboardPreferences.swift DeskBoard/Services/WeatherLocationStore.swift DeskBoard/Services/ExternalDataServices.swift
+run_check WeatherLocation DeskBoard/Services/DashboardPreferences.swift DeskBoard/Services/WeatherLocationStore.swift DeskBoard/Services/WeatherService.swift
+run_check NetworkResilience DeskBoard/Services/DashboardPreferences.swift DeskBoard/Services/WeatherLocationStore.swift DeskBoard/Services/WeatherService.swift
 run_check PersistenceResilience DeskBoard/Models/Persistence.swift
 printf 'All regression checks passed. Temporary binaries: %s\n' "$check_build_dir"

@@ -5,7 +5,6 @@ struct SidebarSectionHeights {
     var quickOpen: CGFloat
     var calendar: CGFloat
     var system: CGFloat
-    var market: CGFloat
     var todo: CGFloat
     var important: CGFloat
     var memo: CGFloat
@@ -16,23 +15,22 @@ struct SidebarSectionHeights {
     var dividers: CGFloat
 
     var total: CGFloat {
-        date + quickOpen + calendar + system + market + todo + important + memo + focus + worldClock + footer + dividers
+        date + quickOpen + calendar + system + todo + important + memo + focus + worldClock + footer + dividers
     }
 
     static func calculate(
-        height: CGFloat, visible: Set<DashboardSection>, marketCount: Int,
+        height: CGFloat, visible: Set<DashboardSection>,
         calendarCount: Int, todoHeight: CGFloat, importantCount: Int,
         addingTodo: Bool, addingImportant: Bool, memoHeight: CGFloat, worldClockCount: Int = 2,
         quickOpenCount: Int = 0
     ) -> Self {
-        let rows = CGFloat((min(6, max(2, marketCount)) + 1) / 2)
         let dividerCount = CGFloat(visible.count) // One divider before each visible section.
         func value(_ section: DashboardSection, _ height: CGFloat) -> CGFloat {
             visible.contains(section) ? height : 0
         }
         var result = Self(
             date: 104, quickOpen: quickOpenCount > 0 ? 42 : 0,
-            calendar: value(.today, 100), system: value(.system, 82), market: value(.market, 49 + rows * 21),
+            calendar: value(.today, 100), system: value(.system, 82),
             todo: value(.todo, 100), important: value(.important, addingImportant ? 105 : 78),
             memo: value(.memo, 180), focus: value(.focusTimer, 48),
             worldClock: value(.worldClock, worldClockCount > 0 ? 76 : 56),
@@ -57,7 +55,6 @@ struct SidebarSectionHeights {
             // The analog face is 84pt plus 20pt padding; keep its natural height.
             shrink(&result.quickOpen, to: 36)
             shrink(&result.system, to: value(.system, 62))
-            shrink(&result.market, to: value(.market, 32 + rows * 16))
             shrink(&result.memo, to: value(.memo, 64))
             shrink(&result.calendar, to: value(.today, 54))
             shrink(&result.todo, to: value(.todo, 54))

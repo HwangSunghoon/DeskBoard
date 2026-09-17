@@ -30,6 +30,7 @@ final class DeskBoardHelpWindowController: NSWindowController {
 }
 
 struct DeskBoardHelpView: View {
+    @State private var informationDocument: DeskBoardInformationDocument?
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 22) {
@@ -39,7 +40,7 @@ struct DeskBoardHelpView: View {
                         .foregroundStyle(.secondary)
                 }
                 topic("Getting started", "Use the gear button at the bottom of the sidebar to open Settings. Time, weather, and Memo are always available. Turn other sections on or off in Settings → Sections; hiding a section does not delete its saved content.")
-                topic("Arrange your dashboard", "In Settings, drag a row using its three-line handle to reorder Sections, Quick Open applications, World Clock cities, or market indicators. Your order is saved automatically. Time, weather, and Quick Open stay at the top. Memo can move but cannot be turned off.")
+                topic("Arrange your dashboard", "In Settings, drag a row using its three-line handle to reorder Sections, Quick Open applications, or World Clock cities. Your order is saved automatically. Time, weather, and Quick Open stay at the top. Memo can move but cannot be turned off.")
                 topic("Window and appearance", "Choose the left or right side and the display in General. Desktop mode keeps DeskBoard near the wallpaper; Always on Top keeps it above other windows. You can also choose launch at login, Dock and menu bar visibility, light or dark appearance, background opacity, and a digital or analog clock.")
                 topic("Today and weather", "Allow Calendar access to show today's events. Choose a calendar in Settings → Data. Timed events can show their location on the right. To change the weather city, choose Change next to Weather location in Data, search for a city, and select the result with the correct region and country. Its name and coordinates are saved together, and the weather refreshes immediately. No device location permission is required. Search needs an internet connection; canceling leaves your current city unchanged.")
                 topic("Todo", "Click +, type a task, and press Return to save it. Double-click a task to edit its title. Click its circle to mark it complete. Hover over a task to reveal its delete button. Long lists scroll inside the Todo section.")
@@ -48,10 +49,14 @@ struct DeskBoardHelpView: View {
                 topic("Focus Timer", "Set focus and break lengths in Settings, then use Play, Pause, and Reset in the sidebar. This is a countdown timer. When a session ends, click Break or Focus to start the next session. Duration changes apply to the next session. Hiding the section does not pause an active timer.")
                 topic("World Clock", "Add up to four cities in Settings. They appear in equal-width columns. Times use the 24-hour format and adjust for daylight saving time. A +1d or −1d label means that city's calendar date differs from the date on your Mac.")
                 topic("Quick Open", "Choose Add Application in Settings and select a local .app. You can add up to six applications. Click an icon in the sidebar to launch or activate the app. If an application becomes unavailable, remove it and select it again. An empty Quick Open list takes no space in the sidebar.")
-                topic("Market", "Choose 2–6 indicators in Settings and drag their three-line handles to arrange them. The sidebar follows this order from left to right, then top to bottom. Each entry shows its name, value, and percentage change. Set the refresh interval in Data. Quotes may be delayed or cached; Yahoo Finance's public endpoint can change or become unavailable. This information is for reference, not financial advice.")
                 topic("System", "CPU, RAM, and BAT show processor use, memory use, and battery level. Download and Upload show network throughput per second, not your connection's maximum speed.")
-                topic("Data and troubleshooting", "Tasks, important items, notes, and preferences are stored locally. Short connection or saving failures do not interrupt editing. Cached weather and quotes stay visible; a small dot marks prolonged update delays, with details on hover. Saving retries silently and keeps a local recovery copy when possible. A Save issue control appears only after both save paths have failed for several minutes. Recovery copy offers export and explicit restoration without deleting the original database. For missing events, check Calendar access in System Settings → Privacy & Security → Calendars.")
-                Text("Weather data: [Open-Meteo](https://open-meteo.com/) · [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). City search: [GeoNames](https://www.geonames.org/) via Open-Meteo. Market data: Yahoo Finance; quotes may be delayed.")
+                topic("Data and troubleshooting", "Tasks, important items, notes, and preferences are stored locally. Short connection or saving failures do not interrupt editing. Cached weather stays visible; a small dot marks prolonged update delays, with details on hover. Saving retries silently and keeps a local recovery copy when possible. A Save issue control appears only after both save paths have failed for several minutes. Recovery copy offers export and explicit restoration without deleting the original database. For missing events, check Calendar access in System Settings → Privacy & Security → Calendars.")
+                HStack(spacing: 18) {
+                    Button("Privacy Policy") { informationDocument = .privacy }
+                    Button("Support") { informationDocument = .support }
+                }
+                .buttonStyle(.link)
+                Text("Weather data: [Open-Meteo](https://open-meteo.com/) · [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). City search: [GeoNames](https://www.geonames.org/) via Open-Meteo.")
                     .font(.system(size: 11)).foregroundStyle(.secondary)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -59,6 +64,7 @@ struct DeskBoardHelpView: View {
             .textSelection(.enabled)
         }
         .background(Color(nsColor: .windowBackgroundColor))
+        .sheet(item: $informationDocument) { DeskBoardInformationView(document: $0) }
     }
 
     private func topic(_ title: String, _ text: String) -> some View {
@@ -67,5 +73,65 @@ struct DeskBoardHelpView: View {
             Text(text).font(.body).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+    }
+}
+
+enum DeskBoardInformationDocument: String, Identifiable {
+    case privacy, support
+    var id: String { rawValue }
+    var title: String { self == .privacy ? "Privacy Policy" : "Support" }
+
+    var paragraphs: [String] {
+        guard let url = Bundle.main.url(forResource: rawValue, withExtension: "md"),
+              let text = try? String(contentsOf: url, encoding: .utf8) else {
+            return ["This document could not be loaded. Visit [DeskBoard on GitHub](https://github.com/HwangSunghoon/DeskBoard) for help."]
+        }
+        // The same Markdown files are shipped offline and published in the repository.
+        return text.components(separatedBy: "\n\n").filter { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+    }
+}
+
+struct DeskBoardInformationView: View {
+    let document: DeskBoardInformationDocument
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        VStack(spacing: 0) {
+            HStack {
+                Text(document.title).font(.headline)
+                Spacer()
+                Button("Done") { dismiss() }.keyboardShortcut(.cancelAction)
+            }
+            .padding(20)
+            Divider()
+            ScrollView {
+                VStack(alignment: .leading, spacing: 14) {
+                    ForEach(Array(document.paragraphs.enumerated()), id: \.offset) { _, paragraph in
+                        if paragraph.hasPrefix("# ") {
+                            Text(String(paragraph.dropFirst(2))).font(.title2.weight(.semibold))
+                        } else if paragraph.hasPrefix("## ") {
+                            Text(String(paragraph.dropFirst(3))).font(.headline).padding(.top, 8)
+                        } else {
+                            Text((try? AttributedString(markdown: paragraph)) ?? AttributedString(paragraph))
+                                .font(.system(size: 13))
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                    }
+                    if document == .support {
+                        Text("Local Application Support folder").font(.headline)
+                        Text(URL.applicationSupportDirectory.path).font(.caption).foregroundStyle(.secondary)
+                        Button("Show Local Data Folder") {
+                            NSWorkspace.shared.open(URL.applicationSupportDirectory)
+                        }
+                        Text("Bundle identifier: \(Bundle.main.bundleIdentifier ?? "Unavailable")")
+                            .font(.caption).foregroundStyle(.secondary)
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(24)
+                .textSelection(.enabled)
+            }
+        }
+        .frame(width: 540, height: 570)
     }
 }

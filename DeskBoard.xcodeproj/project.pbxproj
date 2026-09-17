@@ -16,14 +16,13 @@
 		A20000000000000000000006 /* DateWeatherView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000006 /* DateWeatherView.swift */; };
 		A20000000000000000000007 /* CalendarSectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000007 /* CalendarSectionView.swift */; };
 		A20000000000000000000008 /* SystemSectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000008 /* SystemSectionView.swift */; };
-		A20000000000000000000009 /* MarketSectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000009 /* MarketSectionView.swift */; };
 		A2000000000000000000000A /* TodoSectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000000000000000000000A /* TodoSectionView.swift */; };
 		A2000000000000000000000B /* ImportantSectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000000000000000000000B /* ImportantSectionView.swift */; };
 		A2000000000000000000000C /* MemoSectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000000000000000000000C /* MemoSectionView.swift */; };
 		A2000000000000000000000E /* Persistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000000000000000000000E /* Persistence.swift */; };
 		A2000000000000000000000F /* SystemMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000000000000000000000F /* SystemMonitor.swift */; };
 		A20000000000000000000010 /* CalendarService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000010 /* CalendarService.swift */; };
-		A20000000000000000000011 /* ExternalDataServices.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000011 /* ExternalDataServices.swift */; };
+		A20000000000000000000011 /* WeatherService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000011 /* WeatherService.swift */; };
 		A20000000000000000000012 /* DashboardModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000012 /* DashboardModel.swift */; };
 		A20000000000000000000013 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000013 /* SettingsView.swift */; };
 		A20000000000000000000014 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000014 /* Assets.xcassets */; };
@@ -39,6 +38,8 @@
 		A2000000000000000000001E /* DeskBoardHelp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000000000000000000001E; };
 		A2000000000000000000001F /* WeatherLocationStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000000000000000000001F; };
 		A20000000000000000000020 /* WeatherLocationPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000020; };
+        B20000000000000000000003 = {isa = PBXBuildFile; fileRef = B10000000000000000000003; };
+        B20000000000000000000004 = {isa = PBXBuildFile; fileRef = B10000000000000000000004; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -52,7 +53,6 @@
 		A10000000000000000000006 /* DateWeatherView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateWeatherView.swift; sourceTree = "<group>"; };
 		A10000000000000000000007 /* CalendarSectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarSectionView.swift; sourceTree = "<group>"; };
 		A10000000000000000000008 /* SystemSectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemSectionView.swift; sourceTree = "<group>"; };
-		A10000000000000000000009 /* MarketSectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarketSectionView.swift; sourceTree = "<group>"; };
 		A1000000000000000000000A /* TodoSectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodoSectionView.swift; sourceTree = "<group>"; };
 		A1000000000000000000000B /* ImportantSectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportantSectionView.swift; sourceTree = "<group>"; };
 		A1000000000000000000000C /* MemoSectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoSectionView.swift; sourceTree = "<group>"; };
@@ -60,7 +60,7 @@
 		A1000000000000000000000E /* Persistence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Persistence.swift; sourceTree = "<group>"; };
 		A1000000000000000000000F /* SystemMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemMonitor.swift; sourceTree = "<group>"; };
 		A10000000000000000000010 /* CalendarService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarService.swift; sourceTree = "<group>"; };
-		A10000000000000000000011 /* ExternalDataServices.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalDataServices.swift; sourceTree = "<group>"; };
+		A10000000000000000000011 /* WeatherService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherService.swift; sourceTree = "<group>"; };
 		A10000000000000000000012 /* DashboardModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardModel.swift; sourceTree = "<group>"; };
 		A10000000000000000000013 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		A10000000000000000000014 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -77,6 +77,8 @@
 		A1000000000000000000001E /* DeskBoardHelp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeskBoardHelp.swift; sourceTree = "<group>"; };
 		A1000000000000000000001F /* WeatherLocationStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherLocationStore.swift; sourceTree = "<group>"; };
 		A10000000000000000000020 /* WeatherLocationPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherLocationPicker.swift; sourceTree = "<group>"; };
+        B10000000000000000000003 = {isa = PBXFileReference; lastKnownFileType = text.markdown; path = docs/privacy.md; sourceTree = SOURCE_ROOT; };
+        B10000000000000000000004 = {isa = PBXFileReference; lastKnownFileType = text.markdown; path = docs/support.md; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -130,7 +132,6 @@
 				A10000000000000000000006 /* DateWeatherView.swift */,
 				A10000000000000000000007 /* CalendarSectionView.swift */,
 				A10000000000000000000008 /* SystemSectionView.swift */,
-				A10000000000000000000009 /* MarketSectionView.swift */,
 				A1000000000000000000000A /* TodoSectionView.swift */,
 				A1000000000000000000000B /* ImportantSectionView.swift */,
 				A1000000000000000000000C /* MemoSectionView.swift */,
@@ -165,6 +166,8 @@
 				A1000000000000000000000D /* DeskBoard.entitlements */,
 				A10000000000000000000014 /* Assets.xcassets */,
 				B10000000000000000000002,
+                B10000000000000000000003,
+                B10000000000000000000004,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -182,7 +185,7 @@
 			children = (
 				A1000000000000000000000F /* SystemMonitor.swift */,
 				A10000000000000000000010 /* CalendarService.swift */,
-				A10000000000000000000011 /* ExternalDataServices.swift */,
+				A10000000000000000000011 /* WeatherService.swift */,
 				A10000000000000000000012 /* DashboardModel.swift */,
 				A10000000000000000000016 /* QuickOpenStore.swift */,
 				A10000000000000000000017 /* DashboardPreferences.swift */,
@@ -263,6 +266,8 @@
 			files = (
 				A20000000000000000000014 /* Assets.xcassets in Resources */,
 				B20000000000000000000002,
+                B20000000000000000000003,
+                B20000000000000000000004,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -281,14 +286,13 @@
 				A20000000000000000000006 /* DateWeatherView.swift in Sources */,
 				A20000000000000000000007 /* CalendarSectionView.swift in Sources */,
 				A20000000000000000000008 /* SystemSectionView.swift in Sources */,
-				A20000000000000000000009 /* MarketSectionView.swift in Sources */,
 				A2000000000000000000000A /* TodoSectionView.swift in Sources */,
 				A2000000000000000000000B /* ImportantSectionView.swift in Sources */,
 				A2000000000000000000000C /* MemoSectionView.swift in Sources */,
 				A2000000000000000000000E /* Persistence.swift in Sources */,
 				A2000000000000000000000F /* SystemMonitor.swift in Sources */,
 				A20000000000000000000010 /* CalendarService.swift in Sources */,
-				A20000000000000000000011 /* ExternalDataServices.swift in Sources */,
+				A20000000000000000000011 /* WeatherService.swift in Sources */,
 				A20000000000000000000012 /* DashboardModel.swift in Sources */,
 				A20000000000000000000013 /* SettingsView.swift in Sources */,
 				A2000000000000000000001E /* DeskBoardHelp.swift in Sources */,

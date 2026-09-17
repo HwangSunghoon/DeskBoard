@@ -88,6 +88,74 @@ private func check(_ condition: Bool, _ message: String = "Regression check fail
         check(realDisk.checkpoint())
         let reopenedDisk = try diskFactory()
         check(try reopenedDisk.mainContext.fetch(FetchDescriptor<MemoDocument>())[0].text == "Survives reopening")
+        try checkArchiveRetention(root: root, data: JSONEncoder().encode(savedCopy))
         print("PASS: failed primary save preserves edits, durable recovery copy, broken-store fallback, pending copy never silently overwrites primary, explicit restore archives original, export, five-minute warning threshold")
+    }
+
+    @MainActor static func checkArchiveRetention(root: URL, data: Data) throws {
+        let fm = FileManager.default
+        let now = Date()
+        let old = now.addingTimeInterval(-31 * 86_400)
+        let directory = root.appendingPathComponent("retention")
+        try fm.createDirectory(at: directory, withIntermediateDirectories: true)
+        func seed(_ name: String, date: Date = old, bytes: Data? = nil) throws -> URL {
+            let url = directory.appendingPathComponent(name)
+            try (bytes ?? data).write(to: url)
+            try fm.setAttributes([.modificationDate: date], ofItemAtPath: url.path)
+            return url
+        }
+        let retired = try seed("before-restore-\(UUID().uuidString).json")
+        let earlier = try seed("earlier-recovery-\(UUID().uuidString).json")
+        let recent = try seed("before-restore-\(UUID().uuidString).json", date: now)
+        let unknown = try seed("before-restore-manual-export.json")
+        let unreadable = try seed("before-restore-\(UUID().uuidString).json", bytes: Data("broken".utf8))
+        let symlink = directory.appendingPathComponent("before-restore-\(UUID().uuidString).json")
+        try fm.createSymbolicLink(at: symlink, withDestinationURL: unknown)
+        let disk = try memory()
+        var failSave = true
+        let controller = PersistenceController(directory: directory, makeDiskContainer: { disk }, saveDiskContext: {
+            if failSave { throw CocoaError(.fileWriteOutOfSpace) }
+            try $0.save()
+        })
+        disk.mainContext.insert(MemoDocument(text: "Protected"))
+        check(controller.checkpoint(now: now))
+        check(fm.fileExists(atPath: retired.path), "Failed primary save must not prune archives")
+        // A restart with an unresolved pending snapshot must not prune either.
+        let pending = PersistenceController(directory: directory, makeDiskContainer: { try memory() })
+        check(pending.hasPendingRecovery && pending.checkpoint(now: now))
+        check(fm.fileExists(atPath: retired.path))
+        check(fm.fileExists(atPath: directory.appendingPathComponent("pending.json").path))
+        failSave = false
+        check(controller.checkpoint(now: now))
+        check(!fm.fileExists(atPath: retired.path) && !fm.fileExists(atPath: earlier.path))
+        for file in [recent, unknown, unreadable, symlink] {
+            check(fm.fileExists(atPath: file.path), "Only valid retired app snapshots may expire")
+        }
+        check(fm.fileExists(atPath: directory.appendingPathComponent("last-saved.json").path))
+        // Failed backup update must also leave archives intact.
+        let blockedBackup = root.appendingPathComponent("retention-backup-failure")
+        try fm.createDirectory(at: blockedBackup.appendingPathComponent("last-saved.json"), withIntermediateDirectories: true)
+        let protected = blockedBackup.appendingPathComponent("before-restore-\(UUID().uuidString).json")
+        try data.write(to: protected)
+        try fm.setAttributes([.modificationDate: old], ofItemAtPath: protected.path)
+        let backupFailure = PersistenceController(directory: blockedBackup, makeDiskContainer: { try memory() })
+        check(backupFailure.checkpoint(now: now))
+        check(fm.fileExists(atPath: protected.path))
+        for failedPrimary in [false, true] {
+            let corruptDirectory = root.appendingPathComponent("unreadable-pending-\(failedPrimary)")
+            try fm.createDirectory(at: corruptDirectory, withIntermediateDirectories: true)
+            let raw = Data("Unreadable but irreplaceable recovery data".utf8)
+            try raw.write(to: corruptDirectory.appendingPathComponent("pending.json"))
+            let corruptPending = PersistenceController(directory: corruptDirectory, makeDiskContainer: { try memory() }, saveDiskContext: {
+                if failedPrimary { throw CocoaError(.fileWriteOutOfSpace) }
+                try $0.save()
+            })
+            check(corruptPending.checkpoint(now: now))
+            let preserved = try fm.contentsOfDirectory(at: corruptDirectory, includingPropertiesForKeys: nil)
+                .filter { $0.lastPathComponent.hasPrefix("unreadable-recovery-") }
+            check(preserved.count == 1)
+            check(try Data(contentsOf: preserved[0]) == raw)
+        }
+        print("PASS: retention protects pending/latest/recent/unreadable/unknown/symlink files and skips failed saves/backups")
     }
 }

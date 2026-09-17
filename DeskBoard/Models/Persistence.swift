@@ -59,6 +59,7 @@ final class PersistenceController: ObservableObject {
     private var pendingSnapshot: RecoverySnapshot?
     private var archivedPendingSnapshot = false
     private var lastFailureLog: Date?
+    private var lastArchiveCleanup: Date?
     private let logger = Logger(subsystem: "com.local.DeskBoard", category: "persistence")
     private var pendingURL: URL { directory.appendingPathComponent("pending.json") }
     private var backupURL: URL { directory.appendingPathComponent("last-saved.json") }
@@ -131,8 +132,10 @@ final class PersistenceController: ObservableObject {
                     do {
                         try write(data, to: backupURL)
                         if pendingSnapshot == nil, FileManager.default.fileExists(atPath: pendingURL.path) {
+                            try preserveUnreadablePendingCopy()
                             try FileManager.default.removeItem(at: pendingURL)
                         }
+                        if pendingSnapshot == nil { pruneRecoveryArchives(now: now) }
                     } catch { logger.notice("Recovery backup update failed. Error code: \((error as NSError).code)") }
                     return true
                 } catch {
@@ -143,6 +146,7 @@ final class PersistenceController: ObservableObject {
                 try write(try JSONEncoder().encode(pendingSnapshot), to: directory.appendingPathComponent("earlier-recovery-\(UUID().uuidString).json"))
                 archivedPendingSnapshot = true
             }
+            try preserveUnreadablePendingCopy()
             try write(data, to: pendingURL)
             // Keep retrying the real database, even if its context no longer marks changes.
             needsCheckpoint = !isTemporary
@@ -226,6 +230,38 @@ final class PersistenceController: ObservableObject {
     private func readSnapshot(at url: URL) -> RecoverySnapshot? {
         guard let data = try? Data(contentsOf: url), let value = try? JSONDecoder().decode(RecoverySnapshot.self, from: data), value.version == 1 else { return nil }
         return value
+    }
+
+    /// A corrupt or newer-format pending file may still be useful for manual
+    /// recovery. Preserve its exact bytes before any replacement or removal.
+    private func preserveUnreadablePendingCopy() throws {
+        guard FileManager.default.fileExists(atPath: pendingURL.path),
+              readSnapshot(at: pendingURL) == nil else { return }
+        let data = try Data(contentsOf: pendingURL)
+        try write(data, to: directory.appendingPathComponent("unreadable-recovery-\(UUID().uuidString).json"))
+    }
+
+    /// Only retired, readable snapshots expire. Never prune during a storage
+    /// failure or while a pending recovery copy still needs the user's decision.
+    private func pruneRecoveryArchives(now: Date) {
+        guard !FileManager.default.fileExists(atPath: pendingURL.path),
+              lastArchiveCleanup.map({ now.timeIntervalSince($0) >= 86_400 }) ?? true else { return }
+        lastArchiveCleanup = now
+        let keys: Set<URLResourceKey> = [.isRegularFileKey, .isSymbolicLinkKey, .contentModificationDateKey]
+        guard let files = try? FileManager.default.contentsOfDirectory(at: directory, includingPropertiesForKeys: Array(keys)) else { return }
+        for file in files {
+            let name = file.deletingPathExtension().lastPathComponent
+            guard file.pathExtension == "json",
+                  let prefix = ["before-restore-", "earlier-recovery-"].first(where: { name.hasPrefix($0) }),
+                  UUID(uuidString: String(name.dropFirst(prefix.count))) != nil,
+                  let values = try? file.resourceValues(forKeys: keys),
+                  values.isRegularFile == true, values.isSymbolicLink != true,
+                  let modified = values.contentModificationDate,
+                  now.timeIntervalSince(modified) > 30 * 86_400,
+                  readSnapshot(at: file) != nil else { continue }
+            do { try FileManager.default.removeItem(at: file) }
+            catch { logger.notice("Recovery archive cleanup deferred. Error code: \((error as NSError).code)") }
+        }
     }
 
     static let didRecover = Notification.Name("DeskBoard.persistenceRecovered")

@@ -82,9 +82,6 @@ struct SidebarView: View {
         case .system:
             SystemSectionView(monitor: dashboard.system)
                 .frame(height: layout.system)
-        case .market:
-            MarketSectionView(service: dashboard.market)
-                .frame(height: layout.market)
         case .todo:
             TodoSectionView(isAdding: $isAddingTodo, availableHeight: layout.todo)
                 .frame(height: layout.todo)
@@ -127,7 +124,6 @@ struct SidebarView: View {
     private func adaptiveLayout(for size: CGSize) -> SidebarSectionHeights {
         SidebarSectionHeights.calculate(
             height: size.height, visible: preferences.visibleSections,
-            marketCount: preferences.marketInstruments.count,
             calendarCount: calendar.events.count,
             todoHeight: preferredTodoHeight(for: size.width),
             importantCount: importantItems.count,

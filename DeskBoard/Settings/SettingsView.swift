@@ -12,7 +12,7 @@ struct SettingsView: View {
     @AppStorage("focusMinutes") private var focusMinutes = 25
     @AppStorage("breakMinutes") private var breakMinutes = 5
     @State private var showingCityPicker = false
-    @State private var showingIndicatorPicker = false
+    @State private var informationDocument: DeskBoardInformationDocument?
     @State private var showingWeatherPicker = false
 
     @AppStorage("windowMode") private var windowMode = "desktop"
@@ -23,7 +23,6 @@ struct SettingsView: View {
     @AppStorage("appearance") private var appearance = "light"
     @AppStorage("backgroundOpacity") private var backgroundOpacity = 0.82
     @AppStorage("clockStyle") private var clockStyle = "digital"
-    @AppStorage("marketRefreshInterval") private var marketRefreshInterval = 60.0
     @AppStorage("selectedCalendarID") private var selectedCalendarID = ""
 
     @State private var launchAtLogin = SMAppService.mainApp.status == .enabled
@@ -45,16 +44,16 @@ struct SettingsView: View {
             focusTimerSection
             worldClockSection
             quickOpenSection
-            marketSection
             dataSection
+            informationLinks
         }
         .formStyle(.grouped)
         .frame(width: 520, height: 660)
         .sheet(isPresented: $showingCityPicker) {
             WorldClockCityPicker(store: worldClock)
         }
-        .sheet(isPresented: $showingIndicatorPicker) {
-            MarketInstrumentPicker(preferences: preferences)
+        .sheet(item: $informationDocument) { document in
+            DeskBoardInformationView(document: document)
         }
         .sheet(isPresented: $showingWeatherPicker) {
             WeatherLocationPicker(store: weatherLocation)
@@ -71,7 +70,6 @@ struct SettingsView: View {
 
     private var dataObservedSettings: some View {
         settingsForm
-        .onChange(of: marketRefreshInterval) { scheduleDataChange() }
         .onChange(of: selectedCalendarID) { scheduleDataChange() }
         .onDisappear {
             if dataChangeTask != nil {
@@ -145,12 +143,6 @@ struct SettingsView: View {
                     Button("Change…") { showingWeatherPicker = true }
                 }
             }
-
-            Picker("Market refresh", selection: $marketRefreshInterval) {
-                Text("1 minute").tag(60.0)
-                Text("5 minutes").tag(300.0)
-                Text("15 minutes").tag(900.0)
-            }
         }
     }
 
@@ -202,28 +194,15 @@ struct SettingsView: View {
         }
     }
 
-    private var marketSection: some View {
-        Section("Market") {
-            ReorderableSettingsList(items: preferences.marketInstruments, onMove: preferences.moveInstruments) { instrument in
-                HStack {
-                    Text(instrument.displayName)
-                    Spacer()
-                    Button { preferences.setSelected(instrument, false) } label: {
-                        Image(systemName: "xmark")
-                    }
-                    .buttonStyle(.borderless)
-                    .disabled(preferences.marketInstruments.count <= 2)
-                    .help(preferences.marketInstruments.count <= 2 ? "Keep at least two indicators" : "Remove \(instrument.displayName)")
-                }
-            }
-            HStack {
-                Button("Add Indicator", systemImage: "plus") { showingIndicatorPicker = true }
-                    .disabled(preferences.marketInstruments.count >= 6)
+    private var informationLinks: some View {
+        Section {
+            HStack(spacing: 18) {
+                Button("Privacy Policy") { informationDocument = .privacy }
+                Button("Support") { informationDocument = .support }
                 Spacer()
-                Text("\(preferences.marketInstruments.count)/6 selected")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
             }
+            .buttonStyle(.link)
+            .font(.caption)
         }
     }
 
@@ -372,66 +351,6 @@ struct ReorderableSettingsList<Item: Identifiable, Row: View>: View {
             .scrollDisabled(true)
             .frame(height: CGFloat(items.count) * 32 + 8)
         }
-    }
-}
-
-private struct MarketInstrumentPicker: View {
-    @ObservedObject var preferences: DashboardPreferences
-    @Environment(\.dismiss) private var dismiss
-    @State private var search = ""
-
-    private var matchingInstruments: [MarketInstrument] {
-        MarketInstrument.allCases.filter { instrument in
-            !preferences.marketInstruments.contains(instrument) && (search.isEmpty
-                || instrument.displayName.localizedCaseInsensitiveContains(search)
-                || instrument.symbol.localizedCaseInsensitiveContains(search)
-                || instrument.category.rawValue.localizedCaseInsensitiveContains(search))
-        }
-    }
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                Text("Add Indicator").font(.headline)
-                Spacer()
-                Button("Done") { dismiss() }.keyboardShortcut(.cancelAction)
-            }
-            TextField("Search indicators", text: $search).textFieldStyle(.roundedBorder)
-            ScrollView {
-                LazyVStack(alignment: .leading, spacing: 8) {
-                    ForEach(MarketCategory.allCases) { category in
-                        let instruments = matchingInstruments.filter { $0.category == category }
-                        if !instruments.isEmpty {
-                            Text(category.rawValue)
-                                .font(.caption.weight(.semibold))
-                                .foregroundStyle(.secondary)
-                                .padding(.top, 4)
-                            ForEach(instruments) { instrument in
-                                Button {
-                                    preferences.setSelected(instrument, true)
-                                    dismiss()
-                                } label: {
-                                    HStack {
-                                        Text(instrument.displayName)
-                                        Spacer()
-                                        Image(systemName: "plus").foregroundStyle(.secondary)
-                                    }
-                                    .padding(.vertical, 5)
-                                    .contentShape(Rectangle())
-                                }
-                                .buttonStyle(.plain)
-                                .disabled(preferences.marketInstruments.count >= 6)
-                            }
-                        }
-                    }
-                    if matchingInstruments.isEmpty {
-                        Text("No matching indicators").foregroundStyle(.secondary).padding(.vertical)
-                    }
-                }
-            }
-        }
-        .padding(20)
-        .frame(width: 400, height: 420)
     }
 }
 
