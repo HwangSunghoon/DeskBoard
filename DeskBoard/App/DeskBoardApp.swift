@@ -9,6 +9,14 @@ struct DeskBoardApp: App {
         Settings {
             SettingsView()
         }
+        .commands {
+            CommandGroup(replacing: .help) {
+                Button("DeskBoard Help") {
+                    DeskBoardHelpWindowController.shared.showHelp()
+                }
+                .keyboardShortcut("?", modifiers: .command)
+            }
+        }
 
         MenuBarExtra(
             "DeskBoard",

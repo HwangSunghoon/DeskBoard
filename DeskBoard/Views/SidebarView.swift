@@ -8,7 +8,17 @@ struct SidebarView: View {
     @AppStorage("backgroundOpacity") private var backgroundOpacity = 0.82
     @Query(sort: [SortDescriptor(\TodoItem.sortOrder), SortDescriptor(\TodoItem.createdAt)]) private var todoItems: [TodoItem]
     @Query(sort: [SortDescriptor(\ImportantItem.sortOrder)]) private var importantItems: [ImportantItem]
+    @ObservedObject private var preferences = DashboardPreferences.shared
+    @ObservedObject private var worldClock = WorldClockStore.shared
+    @ObservedObject private var quickOpen = QuickOpenStore.shared
+    @ObservedObject private var calendar: CalendarService
+    @State private var isAddingTodo = false
+    @State private var isAddingImportant = false
     @State private var memoPreferredHeight: CGFloat = 180
+
+    init(calendar: CalendarService) {
+        self.calendar = calendar
+    }
 
     var body: some View {
         GeometryReader { proxy in
@@ -16,37 +26,19 @@ struct SidebarView: View {
             VStack(spacing: 0) {
                 DateWeatherView(model: dashboard, weather: dashboard.weather)
                     .frame(height: layout.date)
-                QuickOpenView()
-                    .frame(height: layout.quickOpen)
-                sectionDivider
-                CalendarSectionView(service: dashboard.calendar)
-                    .frame(height: layout.calendar)
-                sectionDivider
-                SystemSectionView(monitor: dashboard.system)
-                    .frame(height: layout.system)
-                sectionDivider
-                MarketSectionView(service: dashboard.market)
-                    .frame(height: layout.market)
-                productivityDivider
-                TodoSectionView()
-                    .frame(height: layout.todo)
-                sectionDivider
-                ImportantSectionView()
-                    .frame(height: layout.important)
-                sectionDivider
-                MemoSectionView(
-                    availableWidth: max(80, proxy.size.width - 36),
-                    onPreferredHeightChange: { height in
-                        guard abs(memoPreferredHeight - height) >= 1 else { return }
-                        memoPreferredHeight = height
-                    }
-                )
-                    .frame(height: layout.memo)
+                if !quickOpen.applications.isEmpty {
+                    QuickOpenView()
+                        .frame(height: layout.quickOpen)
+                }
+                ForEach(preferences.orderedVisibleSections) { section in
+                    if section == .todo { productivityDivider }
+                    else { sectionDivider }
+                    sectionContent(section, layout: layout, width: proxy.size.width)
+                }
+                Spacer(minLength: 0)
+                Color.clear.frame(height: layout.footer)
             }
-            .animation(.easeInOut(duration: 0.18), value: dashboard.calendar.events.count)
-            .animation(.easeInOut(duration: 0.18), value: todoItems.count)
-            .animation(.easeInOut(duration: 0.18), value: importantItems.count)
-            .animation(.easeInOut(duration: 0.18), value: memoPreferredHeight)
+            .environment(\.compactSidebarSections, layout.compact)
             .padding(.horizontal, 18)
             .background {
                 ZStack {
@@ -70,9 +62,48 @@ struct SidebarView: View {
                 .help("DeskBoard Settings")
                 .padding(7)
             }
+            .overlay(alignment: .bottomLeading) {
+                StorageStatusView().padding(.leading, 18).padding(.bottom, 8)
+            }
         }
         .frame(minWidth: 320, minHeight: 620)
         .preferredColorScheme(preferredColorScheme)
+    }
+
+    @ViewBuilder
+    private func sectionContent(_ section: DashboardSection, layout: SidebarSectionHeights, width: CGFloat) -> some View {
+        switch section {
+        case .today:
+            CalendarSectionView(service: calendar)
+                .frame(height: layout.calendar)
+        case .worldClock:
+            WorldClockView(store: worldClock, now: dashboard.now)
+                .frame(height: layout.worldClock)
+        case .system:
+            SystemSectionView(monitor: dashboard.system)
+                .frame(height: layout.system)
+        case .market:
+            MarketSectionView(service: dashboard.market)
+                .frame(height: layout.market)
+        case .todo:
+            TodoSectionView(isAdding: $isAddingTodo, availableHeight: layout.todo)
+                .frame(height: layout.todo)
+        case .focusTimer:
+            FocusTimerView(timer: dashboard.focusTimer, now: dashboard.now)
+                .frame(height: layout.focus)
+        case .important:
+            ImportantSectionView(isAdding: $isAddingImportant)
+                .frame(height: layout.important)
+        case .memo:
+            MemoSectionView(
+                availableWidth: max(80, width - 36),
+                onPreferredHeightChange: { height in
+                    guard abs(memoPreferredHeight - height) >= 1 else { return }
+                    memoPreferredHeight = height
+                }
+            )
+            .frame(height: layout.memo)
+        }
     }
 
     private var sectionDivider: some View {
@@ -94,55 +125,17 @@ struct SidebarView: View {
     }
 
     private func adaptiveLayout(for size: CGSize) -> SidebarSectionHeights {
-        let height = size.height
-        var base = SidebarSectionHeights(
-            date: 104,
-            quickOpen: 42,
-            calendar: 100,
-            system: 104,
-            market: 112,
-            todo: 100,
-            important: 100,
-            memo: 200
+        SidebarSectionHeights.calculate(
+            height: size.height, visible: preferences.visibleSections,
+            marketCount: preferences.marketInstruments.count,
+            calendarCount: calendar.events.count,
+            todoHeight: preferredTodoHeight(for: size.width),
+            importantCount: importantItems.count,
+            addingTodo: isAddingTodo && preferences.visibleSections.contains(.todo),
+            addingImportant: isAddingImportant && preferences.visibleSections.contains(.important),
+            memoHeight: memoPreferredHeight, worldClockCount: worldClock.cities.count,
+            quickOpenCount: quickOpen.applications.count
         )
-        let dividerSpace: CGFloat = 6
-
-        var deficit = max(0, base.total + dividerSpace - height)
-        func shrink(_ value: inout CGFloat, to floor: CGFloat) {
-            let reduction = min(deficit, max(0, value - floor))
-            value -= reduction
-            deficit -= reduction
-        }
-        shrink(&base.memo, to: 100)
-        shrink(&base.todo, to: 80)
-        shrink(&base.calendar, to: 80)
-        shrink(&base.important, to: 70)
-        shrink(&base.market, to: 104)
-        shrink(&base.system, to: 96)
-        shrink(&base.date, to: 96)
-        shrink(&base.quickOpen, to: 36)
-
-        let calendarTarget = min(210, max(base.calendar, 54 + CGFloat(dashboard.calendar.events.count) * 24))
-        let importantTarget = min(180, max(base.important, 54 + CGFloat(importantItems.count) * 24))
-        let todoTarget = max(base.todo, preferredTodoHeight(for: size.width))
-        let memoTarget = max(base.memo, memoPreferredHeight)
-        var result = base
-        var availableExtra = max(0, height - base.total - dividerSpace)
-
-        func grow(_ value: inout CGFloat, toward target: CGFloat) {
-            let addition = min(availableExtra, max(0, target - value))
-            value += addition
-            availableExtra -= addition
-        }
-        grow(&result.calendar, toward: calendarTarget)
-        grow(&result.important, toward: importantTarget)
-        grow(&result.todo, toward: todoTarget)
-        grow(&result.memo, toward: memoTarget)
-
-        // Todo and Important start at the same visual height. Content can grow
-        // either section, while otherwise unused room belongs to the memo.
-        result.memo += availableExtra
-        return result
     }
 
     private func preferredTodoHeight(for width: CGFloat) -> CGFloat {
@@ -162,18 +155,14 @@ struct SidebarView: View {
     }
 }
 
-private struct SidebarSectionHeights {
-    var date: CGFloat
-    var quickOpen: CGFloat
-    var calendar: CGFloat
-    var system: CGFloat
-    var market: CGFloat
-    var todo: CGFloat
-    var important: CGFloat
-    var memo: CGFloat
+private struct CompactSidebarSectionsKey: EnvironmentKey {
+    static let defaultValue = false
+}
 
-    var total: CGFloat {
-        date + quickOpen + calendar + system + market + todo + important + memo
+extension EnvironmentValues {
+    var compactSidebarSections: Bool {
+        get { self[CompactSidebarSectionsKey.self] }
+        set { self[CompactSidebarSectionsKey.self] = newValue }
     }
 }
 

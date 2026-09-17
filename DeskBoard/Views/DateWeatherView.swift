@@ -45,6 +45,14 @@ struct DateWeatherView: View {
                     }
                     Text(temperature)
                         .font(.system(size: 22, weight: .light))
+                        .overlay(alignment: .topTrailing) {
+                            if weather.isDelayed(at: model.now) {
+                                Circle().fill(.secondary).frame(width: 4, height: 4)
+                                    .offset(x: 5).help(weather.freshnessDescription)
+                                    .accessibilityLabel("Weather update delayed")
+                            }
+                        }
+                        .help(weather.freshnessDescription)
                 }
                 Text(condition)
                     .font(.system(size: 12))

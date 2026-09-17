@@ -1,10 +1,11 @@
 import SwiftUI
 
 struct SystemSectionView: View {
+    @Environment(\.compactSidebarSections) private var compact
     @ObservedObject var monitor: SystemMonitor
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 7) {
+        VStack(alignment: .leading, spacing: compact ? 4 : 7) {
             SectionTitle(text: "System")
             HStack(spacing: 14) {
                 metric("CPU", value: percent(monitor.snapshot.cpuUsage), progress: monitor.snapshot.cpuUsage)
@@ -16,12 +17,9 @@ struct SystemSectionView: View {
                 Spacer()
                 networkMetric("Upload", value: rate(monitor.snapshot.uploadBytesPerSecond))
             }
-            Text("Uptime \(duration(monitor.snapshot.uptime))")
-                .font(.system(size: 11))
-                .foregroundStyle(.tertiary)
             Spacer(minLength: 0)
         }
-        .padding(.vertical, 10)
+        .padding(.vertical, compact ? 4 : 10)
     }
 
     private func percent(_ value: Double) -> String { "\(Int((value * 100).rounded()))%" }
@@ -33,15 +31,11 @@ struct SystemSectionView: View {
         Double(monitor.snapshot.batteryPercent ?? 0) / 100
     }
     private func rate(_ bytes: Double) -> String {
+        guard bytes >= 1 else { return "0 KB/s" }
         let formatter = ByteCountFormatter()
         formatter.countStyle = .file
+        formatter.allowsNonnumericFormatting = false
         return formatter.string(fromByteCount: Int64(bytes)) + "/s"
-    }
-    private func duration(_ interval: TimeInterval) -> String {
-        let hours = Int(interval) / 3600
-        let minutes = (Int(interval) % 3600) / 60
-        if hours >= 24 { return "\(hours / 24)d \(hours % 24)h" }
-        return "\(hours)h \(minutes)m"
     }
 
     private func metric(_ label: String, value: String, progress: Double) -> some View {

@@ -2,34 +2,48 @@ import SwiftUI
 import SwiftData
 
 struct ImportantSectionView: View {
+    @Environment(\.compactSidebarSections) private var compact
+    @Binding var isAdding: Bool
+    @FocusState private var isDraftFocused: Bool
     @Environment(\.modelContext) private var context
     @Query private var items: [ImportantItem]
-    @State private var isAdding = false
     @State private var title = ""
     @State private var date: Date?
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 9) {
+        VStack(alignment: .leading, spacing: compact ? 4 : 9) {
             HStack {
                 SectionTitle(text: "Important")
                 Button("+") {
-                    if isAdding { add() } else { isAdding = true }
+                    isAdding = true
+                    isDraftFocused = true
                 }
                 .buttonStyle(.plain)
                 .font(.system(size: 14, weight: .medium))
                 .foregroundStyle(.secondary)
-                .help(isAdding ? "Add Important Item" : "New Important Item")
+                .help("New Important Item")
             }
             if isAdding {
                 HStack(spacing: 7) {
-                    TextField("Important item", text: $title)
+                    TextField("Event Title", text: $title)
                         .textFieldStyle(.plain)
+                        .focused($isDraftFocused)
                         .onSubmit(add)
+                        .onExitCommand(perform: cancelAdding)
                     ImportantDateButton(date: $date)
+                    Button(action: add) {
+                        Image(systemName: "checkmark").font(.system(size: 10, weight: .semibold))
+                    }
+                    .buttonStyle(.plain)
+                    .foregroundStyle(.secondary)
+                    .disabled(title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                    .help("Add Important Item")
                 }
                 .font(DashboardTypography.item)
             }
-            if items.isEmpty && !isAdding { PlaceholderText(text: "Pin a date or reminder") }
+            if items.isEmpty && !isAdding {
+                PlaceholderText(text: "Pin a date or reminder")
+            }
             ScrollView(.vertical) {
                 LazyVStack(spacing: 6) {
                     ForEach(Array(sortedItems.enumerated()), id: \.element.persistentModelID) { index, item in
@@ -45,18 +59,29 @@ struct ImportantSectionView: View {
                 .padding(.bottom, 5)
             }
             .scrollIndicators(.hidden)
-            Spacer(minLength: 0)
         }
-        .padding(.vertical, 12)
+        .padding(.vertical, compact ? 4 : 12)
+        .task(id: isAdding) {
+            if isAdding {
+                await Task.yield()
+                isDraftFocused = true
+            }
+        }
+        .onDisappear { cancelAdding() }
+    }
+
+    private func cancelAdding() {
+        title = ""
+        date = nil
+        isAdding = false
+        isDraftFocused = false
     }
 
     private func add() {
         let value = title.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !value.isEmpty else { return }
         context.insert(ImportantItem(title: value, date: date, sortOrder: (items.map(\.sortOrder).max() ?? -1) + 1))
-        title = ""
-        date = nil
-        isAdding = false
+        cancelAdding()
     }
 
     private func swap(_ first: ImportantItem, _ second: ImportantItem) {
@@ -160,33 +185,16 @@ private struct ImportantDateButton: View {
             attachmentAnchor: .rect(.bounds),
             arrowEdge: sidebarSide == "right" ? .trailing : .leading
         ) {
-            VStack(spacing: 8) {
-                DatePicker(
-                    "Date",
-                    selection: Binding(
-                        get: { date ?? .now },
-                        set: { date = $0 }
-                    ),
-                    displayedComponents: .date
-                )
-                .datePickerStyle(.graphical)
-                .labelsHidden()
-
-                HStack {
-                    Button("No Date") {
-                        date = nil
-                        isPresented = false
-                    }
-                    .buttonStyle(.plain)
-                    .foregroundStyle(.secondary)
-                    Spacer()
-                    Button("Done") { isPresented = false }
-                        .keyboardShortcut(.defaultAction)
-                }
-                .font(.system(size: 12))
+            CompactDatePicker(selectedDate: date) { selected in
+                date = selected
+                isPresented = false
             }
-            .padding(12)
-            .frame(width: 230)
+            .onExitCommand { isPresented = false }
+        }
+        .contextMenu {
+            if date != nil {
+                Button("Clear Date") { date = nil }
+            }
         }
     }
 

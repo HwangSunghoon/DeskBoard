@@ -9,7 +9,6 @@ struct SystemSnapshot {
     var isCharging = false
     var downloadBytesPerSecond = 0.0
     var uploadBytesPerSecond = 0.0
-    var uptime: TimeInterval = ProcessInfo.processInfo.systemUptime
 }
 
 final class SystemMonitor: ObservableObject {
@@ -19,17 +18,23 @@ final class SystemMonitor: ObservableObject {
     private var previousCPUTicks: (used: UInt64, total: UInt64)?
     private var previousNetwork: (received: UInt64, sent: UInt64, date: Date)?
     private var tick = 0
+    private let samplingQueue = DispatchQueue(label: "DeskBoard.system-sampling", qos: .utility)
 
     func start() {
         guard timer == nil else { return }
-        refresh(includeBattery: true, includeUptime: true)
+        samplingQueue.async { [weak self] in
+            self?.previousCPUTicks = nil
+            self?.previousNetwork = nil
+            self?.tick = 0
+            self?.refresh(includeBattery: true)
+        }
 
-        let source = DispatchSource.makeTimerSource(queue: .global(qos: .utility))
+        let source = DispatchSource.makeTimerSource(queue: samplingQueue)
         source.schedule(deadline: .now() + 2, repeating: 2, leeway: .milliseconds(250))
         source.setEventHandler { [weak self] in
             guard let self else { return }
             self.tick += 1
-            self.refresh(includeBattery: self.tick.isMultiple(of: 8), includeUptime: self.tick.isMultiple(of: 30))
+            self.refresh(includeBattery: self.tick.isMultiple(of: 8))
         }
         source.resume()
         timer = source
@@ -42,12 +47,11 @@ final class SystemMonitor: ObservableObject {
 
     deinit { timer?.cancel() }
 
-    private func refresh(includeBattery: Bool, includeUptime: Bool) {
+    private func refresh(includeBattery: Bool) {
         let cpu = readCPUUsage()
         let memory = readMemoryUsage()
         let network = readNetworkSpeed()
         let battery = includeBattery ? readBattery() : nil
-        let uptime = includeUptime ? ProcessInfo.processInfo.systemUptime : nil
 
         DispatchQueue.main.async { [weak self] in
             guard let self else { return }
@@ -59,7 +63,6 @@ final class SystemMonitor: ObservableObject {
                 self.snapshot.batteryPercent = battery.percent
                 self.snapshot.isCharging = battery.charging
             }
-            if let uptime { self.snapshot.uptime = uptime }
         }
     }
 

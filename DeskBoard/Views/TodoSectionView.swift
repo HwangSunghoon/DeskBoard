@@ -2,22 +2,23 @@ import SwiftUI
 import SwiftData
 
 struct TodoSectionView: View {
+    @Environment(\.compactSidebarSections) private var compact
+    @Binding var isAdding: Bool
+    let availableHeight: CGFloat
+    @State private var scrollRequest = 0
+    @State private var pendingInsertedItem: TodoItem?
     @Environment(\.modelContext) private var context
     @Query(sort: [SortDescriptor(\TodoItem.sortOrder), SortDescriptor(\TodoItem.createdAt)]) private var items: [TodoItem]
     @State private var draft = ""
-    @State private var isAdding = false
     @FocusState private var isDraftFocused: Bool
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: compact ? 4 : 10) {
             HStack {
                 SectionTitle(text: "Todo")
                 Button("+") {
-                    if isAdding {
-                        isDraftFocused = true
-                    } else {
-                        isAdding = true
-                    }
+                    isAdding = true
+                    scrollRequest += 1
                 }
                 .buttonStyle(.plain)
                 .font(.system(size: 14, weight: .medium))
@@ -25,53 +26,78 @@ struct TodoSectionView: View {
                 .help("New Todo")
             }
             if items.isEmpty && !isAdding { PlaceholderText(text: "Add your first task") }
-            ScrollView {
-                LazyVStack(spacing: 7) {
-                    ForEach(Array(items.enumerated()), id: \.element.persistentModelID) { index, item in
-                        TodoRow(
-                            item: item,
-                            delete: { context.delete(item) },
-                            moveEarlier: index > 0 ? { swap(item, items[index - 1]) } : nil,
-                            moveLater: index < items.count - 1 ? { swap(item, items[index + 1]) } : nil
-                        )
-                    }
-                    if isAdding {
-                        HStack(spacing: 8) {
-                            Image(systemName: "circle")
-                                .foregroundStyle(.tertiary)
-                            TextField("New task", text: $draft)
-                                .textFieldStyle(.plain)
-                                .font(DashboardTypography.item)
-                                .focused($isDraftFocused)
-                                .onSubmit(add)
-                            Button(action: add) {
-                                Image(systemName: "checkmark")
-                                    .font(.system(size: 10, weight: .semibold))
-                            }
-                            .buttonStyle(.plain)
-                            .foregroundStyle(draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? .tertiary : .secondary)
-                            .disabled(draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-                            .help("Add Todo")
+            ScrollViewReader { proxy in
+                ScrollView {
+                    VStack(spacing: 7) {
+                        ForEach(Array(items.enumerated()), id: \.element.persistentModelID) { index, item in
+                            TodoRow(
+                                item: item,
+                                delete: { context.delete(item) },
+                                moveEarlier: index > 0 ? { swap(item, items[index - 1]) } : nil,
+                                moveLater: index < items.count - 1 ? { swap(item, items[index + 1]) } : nil
+                            )
                         }
+                        if isAdding {
+                            HStack(spacing: 8) {
+                                Image(systemName: "circle")
+                                    .foregroundStyle(.tertiary)
+                                TextField("New task", text: $draft)
+                                    .textFieldStyle(.plain)
+                                    .font(DashboardTypography.item)
+                                    .focused($isDraftFocused)
+                                    .onSubmit(add)
+                                    .onExitCommand(perform: cancelAdding)
+                                Button(action: add) {
+                                    Image(systemName: "checkmark")
+                                        .font(.system(size: 10, weight: .semibold))
+                                }
+                                .buttonStyle(.plain)
+                                .foregroundStyle(draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? .tertiary : .secondary)
+                                .disabled(draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                                .help("Add Todo")
+                            }
+                        }
+                        Color.clear.frame(height: 1).id("todo-bottom")
+                    }
+                    .padding(.bottom, 5)
+                }
+                .scrollIndicators(.hidden)
+                .task(id: TodoScrollRequest(
+                    generation: scrollRequest,
+                    height: isAdding || pendingInsertedItem != nil ? availableHeight : 0,
+                    itemCount: pendingInsertedItem != nil ? items.count : 0
+                )) {
+                    guard scrollRequest > 0, isAdding || pendingInsertedItem != nil else { return }
+                    // Wait for the new row and the resized viewport to participate in layout.
+                    await Task.yield()
+                    guard !Task.isCancelled else { return }
+                    proxy.scrollTo("todo-bottom", anchor: .bottom)
+                    if isAdding { isDraftFocused = true }
+                    if let pendingInsertedItem, items.contains(where: { $0 === pendingInsertedItem }) {
+                        self.pendingInsertedItem = nil
                     }
                 }
-                .padding(.bottom, 5)
             }
-            .scrollIndicators(.hidden)
             Spacer(minLength: 0)
         }
-        .padding(.vertical, 13)
-        .onChange(of: isAdding) {
-            if isAdding {
-                DispatchQueue.main.async { isDraftFocused = true }
-            }
-        }
+        .padding(.vertical, compact ? 4 : 13)
+        .onDisappear { cancelAdding() }
+    }
+
+    private func cancelAdding() {
+        draft = ""
+        isAdding = false
+        isDraftFocused = false
+        pendingInsertedItem = nil
     }
 
     private func add() {
         let title = draft.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !title.isEmpty else { return }
-        context.insert(TodoItem(title: title, sortOrder: (items.map(\.sortOrder).max() ?? -1) + 1))
+        let item = TodoItem(title: title, sortOrder: (items.map(\.sortOrder).max() ?? -1) + 1)
+        pendingInsertedItem = item
+        context.insert(item)
+        scrollRequest += 1
         draft = ""
         isAdding = false
         isDraftFocused = false
@@ -82,6 +108,12 @@ struct TodoSectionView: View {
         first.sortOrder = second.sortOrder
         second.sortOrder = value
     }
+}
+
+private struct TodoScrollRequest: Equatable {
+    let generation: Int
+    let height: CGFloat
+    let itemCount: Int
 }
 
 private struct TodoRow: View {

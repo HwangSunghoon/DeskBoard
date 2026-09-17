@@ -3,13 +3,14 @@ import SwiftUI
 import SwiftData
 
 struct MemoSectionView: View {
+    @Environment(\.compactSidebarSections) private var compact
     @Environment(\.modelContext) private var context
     @Query private var documents: [MemoDocument]
     let availableWidth: CGFloat
     let onPreferredHeightChange: (CGFloat) -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 9) {
+        VStack(alignment: .leading, spacing: compact ? 4 : 9) {
             SectionTitle(text: "Memo")
             if let document = documents.first {
                 MemoEditor(
@@ -19,7 +20,7 @@ struct MemoSectionView: View {
                 )
             }
         }
-        .padding(.vertical, 13)
+        .padding(.vertical, compact ? 4 : 13)
         .task {
             if documents.isEmpty { context.insert(MemoDocument()) }
         }
@@ -37,16 +38,16 @@ private struct MemoEditor: View {
         TextEditor(text: $document.text)
             .font(.system(size: 13))
             .focused($isFocused)
+            .defaultFocus($isFocused, false)
             .scrollContentBackground(.hidden)
             .scrollIndicators(.hidden)
             .background(.clear)
             .overlay(alignment: .topLeading) {
-                if document.text.isEmpty {
+                if document.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && !isFocused {
                     Text("Write a note…")
                         .font(.system(size: 13))
                         .foregroundStyle(.tertiary)
                         .padding(.top, 1)
-                        .padding(.leading, 7)
                         .allowsHitTesting(false)
                 }
             }
@@ -58,6 +59,9 @@ private struct MemoEditor: View {
                 if !isFocused { commitLayout() }
             }
             .onChange(of: availableWidth) { scheduleLayoutCommit() }
+            .onReceive(NotificationCenter.default.publisher(for: NSApplication.didResignActiveNotification)) { _ in
+                isFocused = false
+            }
             .onAppear { commitLayout() }
             .onDisappear { layoutCommitTask?.cancel() }
     }

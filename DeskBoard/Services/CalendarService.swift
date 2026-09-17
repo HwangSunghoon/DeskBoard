@@ -18,23 +18,37 @@ final class CalendarService: ObservableObject {
     private let store = EKEventStore()
     private var timer: Timer?
     private var observers: [NSObjectProtocol] = []
+    private(set) var isRunning = false
 
     init() {
         observers.append(NotificationCenter.default.addObserver(
             forName: .EKEventStoreChanged, object: nil, queue: .main
-        ) { [weak self] _ in Task { @MainActor in await self?.refresh() } })
+        ) { [weak self] _ in Task { @MainActor in if self?.isRunning == true { await self?.refresh() } } })
         observers.append(NotificationCenter.default.addObserver(
             forName: NSApplication.didBecomeActiveNotification, object: nil, queue: .main
-        ) { [weak self] _ in Task { @MainActor in await self?.refresh() } })
+        ) { [weak self] _ in Task { @MainActor in if self?.isRunning == true { await self?.refresh() } } })
+        for name in [Notification.Name.NSCalendarDayChanged, NSNotification.Name.NSSystemTimeZoneDidChange] {
+            observers.append(NotificationCenter.default.addObserver(forName: name, object: nil, queue: .main) { [weak self] _ in
+                Task { @MainActor in if self?.isRunning == true { await self?.refresh() } }
+            })
+        }
     }
 
     func start() {
+        guard !isRunning else { return }
+        isRunning = true
         Task { await refresh() }
         timer?.invalidate()
         timer = Timer.scheduledTimer(withTimeInterval: 300, repeats: true) { [weak self] _ in
             Task { @MainActor in await self?.refresh() }
         }
         timer?.tolerance = 30
+    }
+
+    func stop() {
+        isRunning = false
+        timer?.invalidate()
+        timer = nil
     }
 
     func requestAccess() async {

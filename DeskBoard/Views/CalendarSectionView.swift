@@ -2,15 +2,16 @@ import SwiftUI
 import EventKit
 
 struct CalendarSectionView: View {
+    @Environment(\.compactSidebarSections) private var compact
     @ObservedObject var service: CalendarService
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 9) {
+        VStack(alignment: .leading, spacing: compact ? 4 : 9) {
             SectionTitle(text: "Today")
             content
             Spacer(minLength: 0)
         }
-        .padding(.vertical, 12)
+        .padding(.vertical, compact ? 4 : 12)
     }
 
     @ViewBuilder

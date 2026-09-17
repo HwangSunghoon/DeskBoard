@@ -9,9 +9,11 @@ final class DashboardModel: ObservableObject {
     let calendar = CalendarService()
     let weather = WeatherService()
     let market = MarketService()
+    let focusTimer = FocusTimerStore.shared
 
     private var clock: Timer?
     private var observers: [NSObjectProtocol] = []
+    private var sectionObserver: AnyCancellable?
 
     init() {
         observers.append(NotificationCenter.default.addObserver(
@@ -19,21 +21,26 @@ final class DashboardModel: ObservableObject {
         ) { [weak self] _ in
             Task { @MainActor in
                 self?.market.schedule()
-                await self?.calendar.refresh()
-                await self?.weather.refresh()
-                await self?.market.refresh()
+                if self?.calendar.isRunning == true { await self?.calendar.refresh() }
             }
         })
     }
 
     func start() {
         guard clock == nil else { return }
-        system.start()
-        calendar.start()
         weather.start()
-        market.start()
+        sectionObserver = DashboardPreferences.shared.$visibleSections.sink { [weak self] sections in
+            guard let self else { return }
+            if sections.contains(.system) { self.system.start() } else { self.system.stop() }
+            if sections.contains(.today) { self.calendar.start() } else { self.calendar.stop() }
+            if sections.contains(.market) { self.market.start() } else { self.market.stop() }
+        }
         let timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
-            Task { @MainActor in self?.now = .now }
+            Task { @MainActor in
+                guard let self else { return }
+                self.now = .now
+                self.focusTimer.update(now: self.now)
+            }
         }
         timer.tolerance = 0.1
         clock = timer
@@ -43,7 +50,13 @@ final class DashboardModel: ObservableObject {
         clock?.invalidate()
         clock = nil
         system.stop()
+        calendar.stop()
+        weather.stop()
+        market.stop()
+        sectionObserver = nil
     }
+
+    deinit { observers.forEach(NotificationCenter.default.removeObserver) }
 }
 
 extension Notification.Name {

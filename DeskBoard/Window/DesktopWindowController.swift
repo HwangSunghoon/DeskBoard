@@ -14,7 +14,7 @@ final class DesktopWindowController: NSWindowController {
     private let dashboard = DashboardModel()
     private var observers: [NSObjectProtocol] = []
 
-    convenience init(modelContainer: ModelContainer) {
+    convenience init(modelContainer: ModelContainer?) {
         let panel = SidebarPanel(
             contentRect: .zero,
             styleMask: [.borderless],
@@ -55,7 +55,7 @@ final class DesktopWindowController: NSWindowController {
         observers.removeAll()
     }
 
-    private func configure(_ panel: NSPanel, modelContainer: ModelContainer) {
+    private func configure(_ panel: NSPanel, modelContainer: ModelContainer?) {
         panel.title = "DeskBoard"
         panel.isOpaque = false
         panel.backgroundColor = .clear
@@ -63,15 +63,26 @@ final class DesktopWindowController: NSWindowController {
         panel.isMovable = false
         panel.hidesOnDeactivate = false
         panel.level = .normal
-        panel.contentView = NSHostingView(
-            rootView: SidebarView()
+        if let modelContainer {
+            panel.contentView = NSHostingView(
+            rootView: SidebarView(calendar: dashboard.calendar)
                 .environmentObject(dashboard)
                 .modelContainer(modelContainer)
-        )
+            )
+            modelContainer.mainContext.autosaveEnabled = false
+        } else {
+            panel.contentView = NSHostingView(rootView: StorageUnavailableView(dashboard: dashboard))
+        }
     }
 
     private func observeChanges() {
         let center = NotificationCenter.default
+        observers.append(center.addObserver(forName: PersistenceController.didRecover, object: nil, queue: .main) { [weak self] _ in
+            Task { @MainActor in
+                guard let self, let panel = self.window as? SidebarPanel else { return }
+                self.configure(panel, modelContainer: PersistenceController.shared.container)
+            }
+        })
         observers.append(center.addObserver(forName: .deskBoardWindowSettingsChanged, object: nil, queue: .main) { [weak self] _ in
             self?.showSidebar()
         })
