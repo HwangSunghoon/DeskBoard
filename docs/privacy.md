@@ -28,7 +28,7 @@ DeskBoard writes local plaintext JSON recovery copies under its Application Supp
 
 Readable, app-named before-restore and earlier-recovery archives older than 30 days are eligible for cleanup after a successful database save and recovery-copy update, only when no pending recovery remains. Cleanup runs at most once a day during such saves. Recent archives, unreadable files, and unresolved recovery copies are not expired by this cleanup. Copies you export yourself and macOS backups are outside this retention process.
 
-To find local files, open Settings → Support → Show Local Data Folder. Before manually deleting files, export any recovery data you need and quit DeskBoard. Delete only DeskBoard's default.store database and its matching companion files, and DeskBoard/Recovery in the displayed folder; never delete the whole Application Support folder. App preferences are separate in the app's macOS defaults domain, identified by the bundle identifier shown in Support. Uninstalling the app alone may leave local data and preferences. Consult Support if you need help removing them.
+To find local files, open Help → DeskBoard Help → Support → Show Local Data Folder. Before manually deleting files, export any recovery data you need and quit DeskBoard. Delete only DeskBoard's default.store database and its matching companion files, and DeskBoard/Recovery in the displayed folder; never delete the whole Application Support folder. App preferences are separate in the app's macOS defaults domain, identified by the bundle identifier shown in Support. Uninstalling the app alone may leave local data and preferences. Consult Support if you need help removing them.
 
 ## External links and support
 

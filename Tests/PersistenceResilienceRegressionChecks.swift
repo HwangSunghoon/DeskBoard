@@ -89,7 +89,54 @@ private func check(_ condition: Bool, _ message: String = "Regression check fail
         let reopenedDisk = try diskFactory()
         check(try reopenedDisk.mainContext.fetch(FetchDescriptor<MemoDocument>())[0].text == "Survives reopening")
         try checkArchiveRetention(root: root, data: JSONEncoder().encode(savedCopy))
+        try checkPreRestoreEdits(root: root, data: JSONEncoder().encode(savedCopy))
         print("PASS: failed primary save preserves edits, durable recovery copy, broken-store fallback, pending copy never silently overwrites primary, explicit restore archives original, export, five-minute warning threshold")
+    }
+
+    @MainActor static func checkPreRestoreEdits(root: URL, data: Data) throws {
+        for failPrimary in [false, true] {
+            let directory = root.appendingPathComponent("restore-edits-\(failPrimary)")
+            try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+            try data.write(to: directory.appendingPathComponent("pending.json"))
+            let config = ModelConfiguration(url: root.appendingPathComponent("restore-edits-\(failPrimary).store"))
+            let factory = { try ModelContainer(for: TodoItem.self, ImportantItem.self, MemoDocument.self, configurations: config) }
+            let seed = try factory()
+            seed.mainContext.insert(MemoDocument(text: "Original saved memo"))
+            try seed.mainContext.save()
+            var failNextSave = failPrimary
+            let controller = PersistenceController(directory: directory, makeDiskContainer: factory, saveDiskContext: {
+                if failNextSave { failNextSave = false; throw CocoaError(.fileWriteOutOfSpace) }
+                try $0.save()
+            })
+            let latest = "Latest edit immediately before restore"
+            try controller.container!.mainContext.fetch(FetchDescriptor<MemoDocument>())[0].text = latest
+            controller.retry()
+            check(!controller.isTemporary && !controller.hasPendingRecovery)
+            let disk = try factory()
+            check(try disk.mainContext.fetch(FetchDescriptor<MemoDocument>())[0].text == "Keep this memo")
+            let archives = try FileManager.default.contentsOfDirectory(at: directory, includingPropertiesForKeys: nil)
+                .filter { $0.lastPathComponent.hasPrefix("before-restore-") }
+            check(archives.contains { file in
+                guard let snapshot = try? JSONDecoder().decode(RecoverySnapshot.self, from: Data(contentsOf: file)) else { return false }
+                return snapshot.memos.contains { $0.text == latest }
+            }, "Latest pre-restore edits must survive even when checkpoint only saves pending.json")
+        }
+
+        let blocked = root.appendingPathComponent("restore-archive-blocked")
+        try FileManager.default.createDirectory(at: blocked, withIntermediateDirectories: true)
+        try data.write(to: blocked.appendingPathComponent("pending.json"))
+        let primary = try memory()
+        let memo = MemoDocument(text: "Keep the current editor")
+        primary.mainContext.insert(memo)
+        try primary.mainContext.save()
+        let controller = PersistenceController(directory: blocked, makeDiskContainer: { primary })
+        // Simulate storage becoming unavailable after the pending copy was loaded.
+        try FileManager.default.moveItem(at: blocked, to: root.appendingPathComponent("restore-archive-original"))
+        try Data("blocked".utf8).write(to: blocked)
+        controller.retry()
+        check(controller.container === primary && controller.hasPendingRecovery && !controller.isTemporary)
+        check(try primary.mainContext.fetch(FetchDescriptor<MemoDocument>())[0].text == memo.text)
+        print("PASS: latest pre-restore edits archived across primary save failure; failed archive leaves current editor untouched")
     }
 
     @MainActor static func checkArchiveRetention(root: URL, data: Data) throws {

@@ -58,7 +58,7 @@ struct ImportantSectionView: View {
                 }
                 .padding(.bottom, 5)
             }
-            .scrollIndicators(.hidden)
+            .scrollIndicators(.never)
         }
         .padding(.vertical, compact ? 4 : 12)
         .task(id: isAdding) {

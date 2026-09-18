@@ -44,7 +44,11 @@ final class MemoDocument {
 
 @MainActor
 final class PersistenceController: ObservableObject {
+#if DESKBOARD_ERROR_LAB
+    static let shared = LabStorageIsolation.makeSidebarStore()
+#else
     static let shared = PersistenceController()
+#endif
     @Published private(set) var container: ModelContainer?
     @Published private(set) var isTemporary = false
     @Published private(set) var needsSaveAttention = false
@@ -168,12 +172,21 @@ final class PersistenceController: ObservableObject {
     func retry() {
         if !isTemporary, let pendingSnapshot {
             do {
-                // Save any currently displayed database edits before switching copies.
+                // checkpoint() can succeed through pending.json alone. That file
+                // is replaced/removed after restoration, so archive the current
+                // editor independently before switching to the selected copy.
+                guard let context = container?.mainContext else { return }
+                let current = try RecoverySnapshot(context: context)
+                try write(try JSONEncoder().encode(current), to: directory.appendingPathComponent("before-restore-\(UUID().uuidString).json"))
                 guard checkpoint() else { return }
                 try useTemporaryStore(restoring: pendingSnapshot)
                 self.pendingSnapshot = nil
                 NotificationCenter.default.post(name: Self.didRecover, object: self)
-            } catch { return }
+            } catch {
+                recoveryMessage = "Recovery was not restored. Your current edits are still on screen. A safety copy could not be prepared; check free disk space and folder access, then try again."
+                logger.error("Recovery preparation failed; keeping current editor. Error code: \((error as NSError).code)")
+                return
+            }
         }
         guard isTemporary else { _ = checkpoint(); return }
         do {

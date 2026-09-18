@@ -40,7 +40,7 @@ private struct MemoEditor: View {
             .focused($isFocused)
             .defaultFocus($isFocused, false)
             .scrollContentBackground(.hidden)
-            .scrollIndicators(.hidden)
+            .scrollIndicators(.never)
             .background(.clear)
             .overlay(alignment: .topLeading) {
                 if document.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && !isFocused {

@@ -61,7 +61,7 @@ struct TodoSectionView: View {
                     }
                     .padding(.bottom, 5)
                 }
-                .scrollIndicators(.hidden)
+                .scrollIndicators(.never)
                 .task(id: TodoScrollRequest(
                     generation: scrollRequest,
                     height: isAdding || pendingInsertedItem != nil ? availableHeight : 0,
@@ -127,12 +127,13 @@ private struct TodoRow: View {
     @FocusState private var isEditFocused: Bool
 
     var body: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: TodoRowMetrics.spacing) {
             Button { item.isCompleted.toggle() } label: {
                 Image(systemName: item.isCompleted ? "checkmark.circle.fill" : "circle")
                     .foregroundStyle(item.isCompleted ? .secondary : .tertiary)
             }
             .buttonStyle(.plain)
+            .frame(width: TodoRowMetrics.controlWidth)
             if isEditing {
                 HStack(spacing: 6) {
                     TextField("Todo", text: $editDraft)
@@ -155,13 +156,15 @@ private struct TodoRow: View {
                     .onTapGesture(count: 2, perform: beginEditing)
                     .help("Double-click to edit")
             }
-            Spacer(minLength: 4)
-            if isHovering {
-                Button(action: delete) { Image(systemName: "xmark").font(.system(size: 9, weight: .semibold)) }
-                    .buttonStyle(.plain)
-                    .foregroundStyle(.tertiary)
-                    .transition(.opacity)
-            }
+            Spacer(minLength: TodoRowMetrics.minimumSpacer)
+            Button(action: delete) { Image(systemName: "xmark").font(.system(size: 9, weight: .semibold)) }
+                .buttonStyle(.plain)
+                .foregroundStyle(.tertiary)
+                .frame(width: TodoRowMetrics.controlWidth)
+                .opacity(isHovering ? 1 : 0)
+                .allowsHitTesting(isHovering)
+                .disabled(!isHovering)
+                .accessibilityHidden(!isHovering)
         }
         .contentShape(Rectangle())
         .onHover { isHovering = $0 }

@@ -7,14 +7,15 @@ final class DashboardModel: ObservableObject {
     @Published private(set) var now = Date()
     let system = SystemMonitor()
     let calendar = CalendarService()
-    let weather = WeatherService()
+    let weather: WeatherService
     let focusTimer = FocusTimerStore.shared
 
     private var clock: Timer?
     private var observers: [NSObjectProtocol] = []
     private var sectionObserver: AnyCancellable?
 
-    init() {
+    init(weather: WeatherService? = nil) {
+        self.weather = weather ?? WeatherService()
         observers.append(NotificationCenter.default.addObserver(
             forName: .deskBoardDataSettingsChanged, object: nil, queue: .main
         ) { [weak self] _ in
@@ -51,6 +52,10 @@ final class DashboardModel: ObservableObject {
         weather.stop()
         sectionObserver = nil
     }
+
+#if DESKBOARD_ERROR_LAB
+    func setLabDate(_ date: Date) { now = date }
+#endif
 
     deinit { observers.forEach(NotificationCenter.default.removeObserver) }
 }

@@ -84,7 +84,7 @@ With Xcode selected, run `bash Tests/run-regression-checks.sh`. The standalone c
 
 ## Privacy and Support
 
-Read the [Privacy Policy](docs/privacy.md) and [Support guide](docs/support.md). Both documents ship with the app and open offline from small links at the bottom of Settings or in Help. Support links to the public [GitHub Issues](https://github.com/HwangSunghoon/DeskBoard/issues) page; do not post private data there.
+Read the [Privacy Policy](docs/privacy.md) and [Support guide](docs/support.md). Both documents ship with the app and open offline from links in Help → DeskBoard Help. Support links to the public [GitHub Issues](https://github.com/HwangSunghoon/DeskBoard/issues) page; do not post private data there.
 
 DeskBoard does not include analytics, telemetry, advertising, or account sign-in. Personal productivity data remains on the Mac. Network requests are limited to the weather provider described above. City search text is sent to Open-Meteo's geocoding service, and the selected coordinates are sent to its forecast service.
 

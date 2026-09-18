@@ -34,6 +34,15 @@ final class CalendarService: ObservableObject {
         }
     }
 
+#if DESKBOARD_ERROR_LAB
+    /// Compiled only into the isolated lab, never the shipping app.
+    func setLabFixture(status: EKAuthorizationStatus, events: [CalendarEventItem] = []) {
+        stop()
+        authorizationStatus = status
+        self.events = events
+    }
+#endif
+
     func start() {
         guard !isRunning else { return }
         isRunning = true

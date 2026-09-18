@@ -66,7 +66,6 @@ struct SidebarView: View {
                 StorageStatusView().padding(.leading, 18).padding(.bottom, 8)
             }
         }
-        .frame(minWidth: 320, minHeight: 620)
         .preferredColorScheme(preferredColorScheme)
     }
 
@@ -137,7 +136,7 @@ struct SidebarView: View {
     private func preferredTodoHeight(for width: CGFloat) -> CGFloat {
         let font = NSFont.systemFont(ofSize: 13)
         let lineHeight = ceil(font.ascender - font.descender + font.leading)
-        let textWidth = max(100, width - 78)
+        let textWidth = TodoRowMetrics.textWidth(rowWidth: width - 36)
         let rowsHeight = todoItems.reduce(CGFloat.zero) { total, item in
             let measurementText = item.title.isEmpty ? " " : item.title
             let bounds = (measurementText as NSString).boundingRect(

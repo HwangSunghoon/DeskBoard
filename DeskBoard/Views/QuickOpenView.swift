@@ -2,7 +2,9 @@ import AppKit
 import SwiftUI
 
 struct QuickOpenView: View {
-    @ObservedObject private var store = QuickOpenStore.shared
+    @ObservedObject private var store: QuickOpenStore
+
+    init(store: QuickOpenStore? = nil) { self.store = store ?? .shared }
 
     var body: some View {
         GeometryReader { proxy in
@@ -14,7 +16,7 @@ struct QuickOpenView: View {
 
             HStack(spacing: spacing) {
                 ForEach(store.applications) { application in
-                    QuickOpenButton(application: application, iconWidth: iconWidth)
+                    QuickOpenButton(application: application, iconWidth: iconWidth, store: store)
                         .frame(width: buttonWidth, height: 34)
                 }
             }
@@ -26,6 +28,7 @@ struct QuickOpenView: View {
 private struct QuickOpenButton: View {
     let application: QuickOpenApplication
     let iconWidth: CGFloat
+    let store: QuickOpenStore
     @State private var showingLaunchError = false
 
     private var applicationURL: URL? { application.resolvedURL() }
@@ -74,7 +77,7 @@ private struct QuickOpenButton: View {
     }
 
     private func openApplication() {
-        guard let applicationURL = QuickOpenStore.shared.urlForOpening(application) else {
+        guard let applicationURL = store.urlForOpening(application) else {
             showingLaunchError = true
             return
         }

@@ -8,9 +8,6 @@ final class SidebarPanel: NSPanel {
 }
 
 final class DesktopWindowController: NSWindowController {
-    private let sidebarWidthRatio: CGFloat = 0.25
-    private let horizontalInset: CGFloat = 12
-    private let verticalInset: CGFloat = 12
     private let dashboard = DashboardModel()
     private var observers: [NSObjectProtocol] = []
 
@@ -33,15 +30,9 @@ final class DesktopWindowController: NSWindowController {
         let targetScreen = screen ?? preferredScreen() ?? NSScreen.main ?? NSScreen.screens.first
         guard let targetScreen else { return }
 
-        let visibleFrame = targetScreen.visibleFrame
-        let width = max(320, targetScreen.frame.width * sidebarWidthRatio)
         let isLeft = UserDefaults.standard.string(forKey: "sidebarSide") == "left"
-        let frame = NSRect(
-            x: isLeft ? visibleFrame.minX + horizontalInset : visibleFrame.maxX - width - horizontalInset,
-            y: visibleFrame.minY + verticalInset,
-            width: width,
-            height: max(560, visibleFrame.height - verticalInset * 2)
-        )
+        let frame = SidebarWindowGeometry.frame(visibleFrame: targetScreen.visibleFrame,
+                                               screenWidth: targetScreen.frame.width, isLeft: isLeft)
 
         window.setFrame(frame, display: true)
         applyWindowPreferences()
@@ -64,14 +55,20 @@ final class DesktopWindowController: NSWindowController {
         panel.hidesOnDeactivate = false
         panel.level = .normal
         if let modelContainer {
-            panel.contentView = NSHostingView(
+            let hostingView = NSHostingView(
             rootView: SidebarView(calendar: dashboard.calendar)
                 .environmentObject(dashboard)
                 .modelContainer(modelContainer)
             )
+            // The screen-derived panel frame is authoritative; SwiftUI receives
+            // that exact size instead of imposing a second minimum window size.
+            hostingView.sizingOptions = []
+            panel.contentView = hostingView
             modelContainer.mainContext.autosaveEnabled = false
         } else {
-            panel.contentView = NSHostingView(rootView: StorageUnavailableView(dashboard: dashboard))
+            let hostingView = NSHostingView(rootView: StorageUnavailableView(dashboard: dashboard))
+            hostingView.sizingOptions = []
+            panel.contentView = hostingView
         }
     }
 

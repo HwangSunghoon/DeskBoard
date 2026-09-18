@@ -6,12 +6,17 @@ struct CalendarSectionView: View {
     @ObservedObject var service: CalendarService
 
     var body: some View {
-        VStack(alignment: .leading, spacing: compact ? 4 : 9) {
+        VStack(alignment: .leading, spacing: CalendarSectionMetrics.headerSpacing(compact: compact)) {
             SectionTitle(text: "Today")
+                .frame(height: CalendarSectionMetrics.headerHeight, alignment: .leading)
             content
-            Spacer(minLength: 0)
         }
-        .padding(.vertical, compact ? 4 : 12)
+        .padding(.vertical, CalendarSectionMetrics.verticalPadding(compact: compact))
+        .frame(maxHeight: .infinity, alignment: .top)
+    }
+
+    private func timeLabel(for event: CalendarEventItem) -> String {
+        event.isAllDay ? "All day" : event.startDate.formatted(date: .omitted, time: .shortened)
     }
 
     @ViewBuilder
@@ -21,14 +26,17 @@ struct CalendarSectionView: View {
             if service.events.isEmpty {
                 PlaceholderText(text: "No events today")
             } else {
+                let timeWidth = CalendarSectionMetrics.timeColumnWidth(for: service.events.map { timeLabel(for: $0) })
                 ScrollView {
-                    LazyVStack(spacing: 7) {
+                    LazyVStack(spacing: CalendarSectionMetrics.rowSpacing) {
                         ForEach(service.events) { event in
                             HStack(alignment: .firstTextBaseline, spacing: 12) {
-                                Text(event.isAllDay ? "All day" : event.startDate.formatted(date: .omitted, time: .shortened))
-                                    .font(.system(size: 11))
+                                Text(timeLabel(for: event))
+                                    .font(.system(size: CalendarSectionMetrics.timeFontSize))
                                     .foregroundStyle(.secondary)
-                                    .frame(width: 48, alignment: .leading)
+                                    .lineLimit(1)
+                                    .fixedSize(horizontal: true, vertical: false)
+                                    .frame(width: timeWidth, alignment: .leading)
                                 Text(event.title)
                                     .font(.system(size: 13))
                                     .lineLimit(1)
@@ -43,11 +51,12 @@ struct CalendarSectionView: View {
                                         .frame(maxWidth: 82, alignment: .trailing)
                                 }
                             }
+                            .frame(height: CalendarSectionMetrics.rowHeight, alignment: .leading)
                         }
                     }
-                    .padding(.bottom, 4)
+                    .padding(.bottom, CalendarSectionMetrics.bottomInset)
                 }
-                .scrollIndicators(.hidden)
+                .scrollIndicators(.never)
             }
         case .notDetermined:
             Button("Allow Calendar Access") { Task { await service.requestAccess() } }

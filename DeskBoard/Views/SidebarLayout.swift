@@ -1,4 +1,65 @@
 import Foundation
+import AppKit
+
+enum SidebarWindowGeometry {
+    static func frame(visibleFrame: CGRect, screenWidth: CGFloat, isLeft: Bool) -> CGRect {
+        let horizontalInset = min(CGFloat(12), max(0, (visibleFrame.width - 1) / 2))
+        let verticalInset = min(CGFloat(12), max(0, (visibleFrame.height - 1) / 2))
+        let width = min(max(320, screenWidth * 0.25), max(1, visibleFrame.width - horizontalInset * 2))
+        return CGRect(
+            x: isLeft ? visibleFrame.minX + horizontalInset : visibleFrame.maxX - width - horizontalInset,
+            y: visibleFrame.minY + verticalInset,
+            width: width,
+            height: max(1, visibleFrame.height - verticalInset * 2)
+        )
+    }
+}
+
+enum TodoRowMetrics {
+    static let controlWidth: CGFloat = 14
+    static let spacing: CGFloat = 8
+    static let minimumSpacer: CGFloat = 4
+
+    static func textWidth(rowWidth: CGFloat) -> CGFloat {
+        max(1, rowWidth - 2 * controlWidth - 3 * spacing - minimumSpacer)
+    }
+}
+
+/// Shared by the calendar view and the sidebar allocator so wrapping, gaps,
+/// and padding cannot silently make a row taller than its reserved space.
+enum CalendarSectionMetrics {
+    static let maximumVisibleRows = 4
+    static let timeFontSize: CGFloat = 11
+    static let headerHeight: CGFloat = 20
+    static let rowHeight: CGFloat = 20
+    static let rowSpacing: CGFloat = 7
+    static let bottomInset: CGFloat = 4
+
+    static func verticalPadding(compact: Bool) -> CGFloat { compact ? 4 : 12 }
+    static func headerSpacing(compact: Bool) -> CGFloat { compact ? 4 : 9 }
+
+    static func timeColumnWidth(for labels: [String]) -> CGFloat {
+        let font = NSFont.systemFont(ofSize: timeFontSize)
+        return labels.reduce(CGFloat(48)) { width, label in
+            max(width, ceil((label as NSString).size(withAttributes: [.font: font]).width) + 2)
+        }
+    }
+
+    static func height(rowCount: Int, compact: Bool) -> CGFloat {
+        let rows = max(1, rowCount)
+        return 2 * verticalPadding(compact: compact) + headerHeight + headerSpacing(compact: compact)
+            + CGFloat(rows) * rowHeight + CGFloat(rows - 1) * rowSpacing + bottomInset
+    }
+
+    static func fittingHeight(available: CGFloat, rowCount: Int, compact: Bool) -> CGFloat {
+        let capped = min(available, height(rowCount: maximumVisibleRows, compact: compact))
+        guard rowCount > 0, height(rowCount: rowCount, compact: compact) > capped else { return capped }
+        let firstRow = height(rowCount: 1, compact: compact)
+        let rows = max(1, 1 + Int(floor((capped - firstRow) / (rowHeight + rowSpacing))))
+        // At rest, show whole rows at the viewport edge. Reallocate surplus below.
+        return min(capped, height(rowCount: rows, compact: compact))
+    }
+}
 
 struct SidebarSectionHeights {
     var date: CGFloat
@@ -30,7 +91,8 @@ struct SidebarSectionHeights {
         }
         var result = Self(
             date: 104, quickOpen: quickOpenCount > 0 ? 42 : 0,
-            calendar: value(.today, 100), system: value(.system, 82),
+            calendar: value(.today, max(100, CalendarSectionMetrics.height(rowCount: min(calendarCount, CalendarSectionMetrics.maximumVisibleRows), compact: false))),
+            system: value(.system, 82),
             todo: value(.todo, 100), important: value(.important, addingImportant ? 105 : 78),
             memo: value(.memo, 180), focus: value(.focusTimer, 48),
             worldClock: value(.worldClock, worldClockCount > 0 ? 76 : 56),
@@ -43,7 +105,7 @@ struct SidebarSectionHeights {
             deficit -= reduction
         }
         shrink(&result.memo, to: value(.memo, 90))
-        shrink(&result.calendar, to: value(.today, 76))
+        shrink(&result.calendar, to: value(.today, CalendarSectionMetrics.height(rowCount: 1, compact: false)))
         shrink(&result.todo, to: value(.todo, 78))
         shrink(&result.important, to: value(.important, addingImportant ? 103 : 76))
         if deficit > 0 {
@@ -56,14 +118,14 @@ struct SidebarSectionHeights {
             shrink(&result.quickOpen, to: 36)
             shrink(&result.system, to: value(.system, 62))
             shrink(&result.memo, to: value(.memo, 64))
-            shrink(&result.calendar, to: value(.today, 54))
+            shrink(&result.calendar, to: value(.today, CalendarSectionMetrics.height(rowCount: 1, compact: true)))
             shrink(&result.todo, to: value(.todo, 54))
             shrink(&result.important, to: value(.important, addingImportant ? 80 : 54))
             // Reserve one full row per editor even with all sections on a short display.
             shrink(&result.focus, to: value(.focusTimer, 24))
             shrink(&result.quickOpen, to: 34)
             shrink(&result.memo, to: value(.memo, 48))
-            shrink(&result.calendar, to: value(.today, 50))
+            shrink(&result.calendar, to: value(.today, CalendarSectionMetrics.height(rowCount: 1, compact: true)))
             shrink(&result.todo, to: value(.todo, 50))
             shrink(&result.important, to: value(.important, addingImportant ? 76 : 50))
             shrink(&result.footer, to: 20)
@@ -82,7 +144,12 @@ struct SidebarSectionHeights {
         // An open editor receives space before passive content growth.
         if addingTodo { grow(&result.todo, to: todoTarget) }
         if addingImportant { grow(&result.important, to: importantTarget) }
-        grow(&result.calendar, to: min(210, chrome + CGFloat(calendarCount) * 24))
+        grow(&result.calendar, to: CalendarSectionMetrics.height(rowCount: min(calendarCount, CalendarSectionMetrics.maximumVisibleRows), compact: result.compact))
+        if visible.contains(.today) {
+            let fitted = CalendarSectionMetrics.fittingHeight(available: result.calendar, rowCount: calendarCount, compact: result.compact)
+            extra += result.calendar - fitted
+            result.calendar = fitted
+        }
         grow(&result.important, to: importantTarget)
         grow(&result.todo, to: todoTarget)
         grow(&result.memo, to: memoHeight)

@@ -23,6 +23,8 @@ run_check() {
 run_check FocusTimer DeskBoard/Services/FocusTimerStore.swift
 run_check WorldClock DeskBoard/Services/WorldClockStore.swift
 run_check SectionOrder DeskBoard/Services/DashboardPreferences.swift DeskBoard/Views/SidebarLayout.swift
+run_check CalendarLayout DeskBoard/Services/DashboardPreferences.swift DeskBoard/Views/SidebarLayout.swift
+run_check WindowLayout DeskBoard/Services/DashboardPreferences.swift DeskBoard/Views/SidebarLayout.swift
 run_check SettingsReorder DeskBoard/Services/DashboardPreferences.swift DeskBoard/Services/WorldClockStore.swift DeskBoard/Services/QuickOpenStore.swift
 run_check WeatherLocation DeskBoard/Services/DashboardPreferences.swift DeskBoard/Services/WeatherLocationStore.swift DeskBoard/Services/WeatherService.swift
 run_check NetworkResilience DeskBoard/Services/DashboardPreferences.swift DeskBoard/Services/WeatherLocationStore.swift DeskBoard/Services/WeatherService.swift

@@ -1,6 +1,6 @@
 # DeskBoard Support
 
-DeskBoard is a free macOS desktop dashboard. The built-in Help → DeskBoard Help guide explains all sections. Settings is available from the gear button at the bottom of the sidebar. This page is also available offline in Settings → Support.
+DeskBoard is a free macOS desktop dashboard. The built-in Help → DeskBoard Help guide explains all sections. Settings is available from the gear button at the bottom of the sidebar. This page is also available offline in Help → DeskBoard Help → Support.
 
 ## Customize your dashboard
 
@@ -26,7 +26,7 @@ If Recovery copy is shown, read its explanation before restoring. An unsaved cop
 
 The in-app Support sheet shows the actual Application Support folder for your running build and can open it in Finder. The database uses default.store and its matching companion files; recovery snapshots are in DeskBoard/Recovery. A sandboxed build keeps these inside its app container. Do not remove unrelated files or the entire Application Support folder.
 
-To remove local content manually, export what you need, quit DeskBoard, then remove only those DeskBoard database and recovery files. Preferences and the weather cache are stored separately in macOS UserDefaults, under the bundle identifier shown by in-app Support. Ask for instructions for your specific build before resetting preferences. Exported files and Time Machine or other backups must be managed separately. See Settings → Privacy Policy for retention details; it is available offline.
+To remove local content manually, export what you need, quit DeskBoard, then remove only those DeskBoard database and recovery files. Preferences and the weather cache are stored separately in macOS UserDefaults, under the bundle identifier shown by in-app Support. Ask for instructions for your specific build before resetting preferences. Exported files and Time Machine or other backups must be managed separately. See Help → DeskBoard Help → Privacy Policy for retention details; it is available offline.
 
 ## Report a problem
 

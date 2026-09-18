@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0"><dict>
+    <key>CFBundleIdentifier</key><string>com.local.DeskBoard.ErrorLab</string>
+    <key>CFBundleExecutable</key><string>DeskBoardErrorLab</string>
+    <key>CFBundleName</key><string>DeskBoard Error Lab</string>
+    <key>CFBundleDisplayName</key><string>DeskBoard Error Lab</string>
+    <key>CFBundlePackageType</key><string>APPL</string>
+    <key>CFBundleShortVersionString</key><string>1.0</string>
+    <key>CFBundleVersion</key><string>1</string>
+    <key>LSMinimumSystemVersion</key><string>14.0</string>
+    <key>NSHighResolutionCapable</key><true/>
+    <key>NSCalendarsFullAccessUsageDescription</key><string>Only this isolated test app reads calendars when you choose the real Calendar permission test. It never writes events.</string>
+</dict></plist>

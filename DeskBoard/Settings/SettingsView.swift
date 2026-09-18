@@ -12,7 +12,6 @@ struct SettingsView: View {
     @AppStorage("focusMinutes") private var focusMinutes = 25
     @AppStorage("breakMinutes") private var breakMinutes = 5
     @State private var showingCityPicker = false
-    @State private var informationDocument: DeskBoardInformationDocument?
     @State private var showingWeatherPicker = false
 
     @AppStorage("windowMode") private var windowMode = "desktop"
@@ -45,15 +44,11 @@ struct SettingsView: View {
             worldClockSection
             quickOpenSection
             dataSection
-            informationLinks
         }
         .formStyle(.grouped)
         .frame(width: 520, height: 660)
         .sheet(isPresented: $showingCityPicker) {
             WorldClockCityPicker(store: worldClock)
-        }
-        .sheet(item: $informationDocument) { document in
-            DeskBoardInformationView(document: document)
         }
         .sheet(isPresented: $showingWeatherPicker) {
             WeatherLocationPicker(store: weatherLocation)
@@ -191,18 +186,6 @@ struct SettingsView: View {
                 Spacer()
                 Text("\(worldClock.cities.count)/\(WorldClockStore.maximumCities)").font(.caption).foregroundStyle(.secondary)
             }
-        }
-    }
-
-    private var informationLinks: some View {
-        Section {
-            HStack(spacing: 18) {
-                Button("Privacy Policy") { informationDocument = .privacy }
-                Button("Support") { informationDocument = .support }
-                Spacer()
-            }
-            .buttonStyle(.link)
-            .font(.caption)
         }
     }
 

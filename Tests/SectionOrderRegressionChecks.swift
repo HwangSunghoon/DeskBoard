@@ -47,7 +47,7 @@ struct SectionOrderRegressionChecks {
         precondition(partial.sectionOrder.count == all.count)
 
         for section in all { partial.setVisible(section, true) }
-        for height: CGFloat in [620, 800, 1080, 1440] {
+        for height: CGFloat in [560, 580, 600, 620, 800, 1080, 1440] {
             for editing in 0..<4 {
                 func layout() -> SidebarSectionHeights {
                     SidebarSectionHeights.calculate(
@@ -76,7 +76,7 @@ struct SectionOrderRegressionChecks {
         let optional = all.filter { $0 != .memo }
         for mask in 0..<(1 << optional.count) {
             let visible = Set(optional.enumerated().filter { mask & (1 << $0.offset) != 0 }.map(\.element)).union([.memo])
-            for height: CGFloat in [620, 800, 1080, 1440] {
+            for height: CGFloat in [560, 580, 600, 620, 800, 1080, 1440] {
                 for apps in [0, 6] {
                     let result = SidebarSectionHeights.calculate(height: height, visible: visible,
                         calendarCount: 20, todoHeight: 600, importantCount: 20,
