@@ -344,8 +344,10 @@
 				DEVELOPMENT_TEAM = UU9V3Q3PF7;
 				ENABLE_APP_SANDBOX = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = DeskBoard;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
 				INFOPLIST_KEY_NSCalendarsFullAccessUsageDescription = "DeskBoard shows today's events in your private desktop sidebar.";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2026 HwangSunghoon. All rights reserved.";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
@@ -373,8 +375,10 @@
 				DEVELOPMENT_TEAM = UU9V3Q3PF7;
 				ENABLE_APP_SANDBOX = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = DeskBoard;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
 				INFOPLIST_KEY_NSCalendarsFullAccessUsageDescription = "DeskBoard shows today's events in your private desktop sidebar.";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2026 HwangSunghoon. All rights reserved.";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",

@@ -74,9 +74,11 @@ If the database cannot open, DeskBoard preserves it and tries an in-memory edito
 
 ### Distribution checklist
 
+The release identity is **DeskBoard**, bundle identifier **`com.local.DeskBoard`**, version **1.0**, initial build **1**. The existing identifier is retained to avoid changing the sandbox container and preferences domain. See [Release identity](docs/release-identity.md) for signing, versioning, and registration checks.
+
 Release enables Hardened Runtime and dSYM generation; a required-reason privacy manifest declares app-owned UserDefaults access and recovery-file timestamp access ([Apple's approved reasons](https://developer.apple.com/documentation/bundleresources/app-privacy-configuration/nsprivacyaccessedapitypes/nsprivacyaccessedapitype)). Quick Open uses app-scoped bookmarks, and user-selected read/write access supports recovery export. These settings do **not** replace signed-sandbox testing, Developer ID notarization for direct distribution, or App Store validation.
 
-Open-Meteo's free service is for non-commercial use; commercial distribution requires an appropriate plan and attribution review ([terms](https://open-meteo.com/en/terms)). No commercial API subscription or distribution signing was configured automatically. Before release, publish the policy and support documents at stable public URLs, finalize the Bundle ID/version, and test a signed build. An unsigned build is not a distributable release.
+Open-Meteo's free service is for non-commercial use; commercial distribution requires an appropriate plan and attribution review ([terms](https://open-meteo.com/en/terms)). No commercial API subscription or distribution signing was configured automatically. Before release, publish the policy and support documents at stable public URLs, verify the release identity in the Apple developer account and App Store Connect, and test a distribution-signed build. An unsigned build is not a distributable release.
 
 ### Regression checks
 
