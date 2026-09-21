@@ -2,6 +2,10 @@
 
 DeskBoard is a free macOS desktop dashboard. The built-in Help → DeskBoard Help guide explains all sections. Settings is available from the gear button at the bottom of the sidebar. This page is also available offline in Help → DeskBoard Help → Support.
 
+## Contact
+
+For support, email [hwang5672@naver.com](mailto:hwang5672@naver.com). Include your DeskBoard version, macOS version, and a brief description of the issue. Do not send private calendar events, notes, recovery files, passwords, or access tokens.
+
 ## Customize your dashboard
 
 Time, weather, and Memo are always available. Optional sections start disabled for new installations. Turn them on in Settings → Sections, and use the three-line handles to rearrange them. Hiding a section keeps its saved data. Add up to six local applications to Quick Open and up to four World Clock cities. Quick Open takes no height when its list is empty.
