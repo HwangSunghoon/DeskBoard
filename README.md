@@ -2,7 +2,45 @@
 
 DeskBoard is a native macOS productivity sidebar that keeps the information you use throughout the day visible on the desktop. It combines time and weather, today's calendar, system status, market quotes, todos, important dates, and a free-form memo in one lightweight panel.
 
-![DeskBoard running on macOS](docs/deskboard-screenshot.png)
+## Available on the Mac App Store
+
+[Download DeskBoard: Desktop Sidebar for free](https://apps.apple.com/kr/app/deskboard-desktop-sidebar/id6814308273)
+
+DeskBoard **1.0 (build 2)** has passed App Review and is publicly available on the Mac App Store, verified on **October 13, 2026**. The released app requires **macOS 14.0 or later**, has an **English interface**, and includes no accounts, ads, subscriptions, or in-app purchases.
+
+The App Store edition focuses on everyday productivity and **does not include the Market section or stock/market quotes**. Calendar access is optional; other features remain available without it.
+
+[![DeskBoard's public Mac App Store listing, showing the Get button and app screenshots](docs/app-store-listing.png)](https://apps.apple.com/kr/app/deskboard-desktop-sidebar/id6814308273)
+
+*Public Mac App Store listing captured on October 13, 2026.*
+
+## Branch guide
+
+The repository keeps the market-enabled variant separate from the market-free release line.
+
+| Branch | Market / stock features | Purpose |
+| --- | --- | --- |
+| [`codex/release-prep`](https://github.com/HwangSunghoon/DeskBoard/tree/codex/release-prep) | **Not included** | Market-free release-preparation line with privacy/support documentation. Start here for the App Store feature set. |
+| [`archive/with-market`](https://github.com/HwangSunghoon/DeskBoard/tree/archive/with-market) | **Included** | Preserved pre-release variant with a configurable Market section. It is not the App Store edition. |
+| [`main`](https://github.com/HwangSunghoon/DeskBoard/tree/main) | **Included (older implementation)** | Original development baseline and current GitHub default branch. It is not the market-free release line. |
+
+The archived Market variant lets you choose and reorder **2–6 of 15 indicators**: Korean, US, European, and Asian indices; USD/KRW, EUR/KRW, and EUR/USD; gold and WTI futures; and Bitcoin (USD). It displays quotes and percentage changes using a Yahoo Finance chart endpoint; it does not place trades. The archive is a historical snapshot and does not automatically receive later release fixes. Provider availability and redistribution requirements must be reviewed separately before distributing that variant.
+
+For normal use, install the App Store edition. For source builds, choose the branch explicitly rather than assuming `main` matches the published app:
+
+```sh
+# Without Market: release-preparation line
+git clone --branch codex/release-prep https://github.com/HwangSunghoon/DeskBoard.git DeskBoard-release
+
+# With Market: preserved development variant
+git clone --branch archive/with-market https://github.com/HwangSunghoon/DeskBoard.git DeskBoard-market
+```
+
+## Original market-enabled preview
+
+The screenshot and feature list below describe the older `main` implementation, not the App Store edition. For the market-free code and its current documentation, see [`codex/release-prep`](https://github.com/HwangSunghoon/DeskBoard/tree/codex/release-prep).
+
+![Original market-enabled DeskBoard running on macOS](docs/deskboard-screenshot.png)
 
 ## Features
 
