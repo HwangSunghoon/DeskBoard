@@ -2,7 +2,43 @@
 
 DeskBoard is a native macOS productivity sidebar that keeps the information you use throughout the day visible on the desktop. It combines time and weather, today's calendar, system status, todos, important dates, and a free-form memo in one lightweight panel.
 
+## Available on the Mac App Store
+
+[Download DeskBoard: Desktop Sidebar for free](https://apps.apple.com/kr/app/deskboard-desktop-sidebar/id6814308273)
+
+DeskBoard **1.0 (build 2)** has passed App Review and is publicly available on the Mac App Store, verified on **October 13, 2026**. The released app requires **macOS 14.0 or later**, has an **English interface**, and includes no accounts, ads, subscriptions, or in-app purchases.
+
+The App Store edition focuses on everyday productivity and **does not include the Market section or stock/market quotes**. Calendar access is optional; other features remain available without it.
+
+[![DeskBoard's public Mac App Store listing, showing the Get button and app screenshots](docs/app-store-listing.png)](https://apps.apple.com/kr/app/deskboard-desktop-sidebar/id6814308273)
+
+*Public Mac App Store listing captured on October 13, 2026.*
+
+## Branch guide
+
+The repository keeps the market-enabled variant separate from the market-free release line.
+
+| Branch | Market / stock features | Purpose |
+| --- | --- | --- |
+| [`codex/release-prep`](https://github.com/HwangSunghoon/DeskBoard/tree/codex/release-prep) | **Not included** | Market-free release-preparation line with privacy/support documentation. Start here for the App Store feature set. |
+| [`archive/with-market`](https://github.com/HwangSunghoon/DeskBoard/tree/archive/with-market) | **Included** | Preserved pre-release variant with a configurable Market section. It is not the App Store edition. |
+| [`main`](https://github.com/HwangSunghoon/DeskBoard/tree/main) | **Included (older implementation)** | Original development baseline and current GitHub default branch. It is not the market-free release line. |
+
+The archived Market variant lets you choose and reorder **2–6 of 15 indicators**: Korean, US, European, and Asian indices; USD/KRW, EUR/KRW, and EUR/USD; gold and WTI futures; and Bitcoin (USD). It displays quotes and percentage changes using a Yahoo Finance chart endpoint; it does not place trades. The archive is a historical snapshot and does not automatically receive later release fixes. Provider availability and redistribution requirements must be reviewed separately before distributing that variant.
+
+For normal use, install the App Store edition. For source builds, choose the branch explicitly rather than assuming `main` matches the published app:
+
+```sh
+# Without Market: release-preparation line
+git clone --branch codex/release-prep https://github.com/HwangSunghoon/DeskBoard.git DeskBoard-release
+
+# With Market: preserved development variant
+git clone --branch archive/with-market https://github.com/HwangSunghoon/DeskBoard.git DeskBoard-market
+```
+
 ## Features
+
+The features below describe the **market-free release line**.
 
 - Native SwiftUI and AppKit interface with a translucent, floating desktop panel
 - Left- or right-side placement on the selected display
@@ -74,11 +110,11 @@ If the database cannot open, DeskBoard preserves it and tries an in-memory edito
 
 ### Distribution checklist
 
-The release identity is **DeskBoard**, bundle identifier **`com.local.DeskBoard`**, version **1.0**, initial build **1**. The existing identifier is retained to avoid changing the sandbox container and preferences domain. See [Release identity](docs/release-identity.md) for signing, versioning, and registration checks.
+The release identity is **DeskBoard**, bundle identifier **`com.local.DeskBoard`**. The published App Store version is **1.0 (build 2)**; build 1 was the initial review submission. The existing identifier is retained to avoid changing the sandbox container and preferences domain. See [Release identity](docs/release-identity.md) for signing, versioning, and registration checks; check the selected source branch's Xcode settings before creating a new archive.
 
 Release enables Hardened Runtime and dSYM generation; a required-reason privacy manifest declares app-owned UserDefaults access and recovery-file timestamp access ([Apple's approved reasons](https://developer.apple.com/documentation/bundleresources/app-privacy-configuration/nsprivacyaccessedapitypes/nsprivacyaccessedapitype)). Quick Open uses app-scoped bookmarks, and user-selected read/write access supports recovery export. These settings do **not** replace signed-sandbox testing, Developer ID notarization for direct distribution, or App Store validation.
 
-Open-Meteo's free service is for non-commercial use; commercial distribution requires an appropriate plan and attribution review ([terms](https://open-meteo.com/en/terms)). No commercial API subscription or distribution signing was configured automatically. Before release, publish the policy and support documents at stable public URLs, verify the release identity in the Apple developer account and App Store Connect, and test a distribution-signed build. An unsigned build is not a distributable release.
+For future releases or forks, review the weather provider's [terms](https://open-meteo.com/en/terms) and attribution requirements, keep policy/support URLs public, verify your signing identity, and test a distribution-signed build. The published app's approval does not extend to a modified fork, and an unsigned local build is not a distributable release.
 
 ### Regression checks
 
